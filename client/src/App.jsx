@@ -323,19 +323,25 @@ const App = () => {
 
   const saveGeminiSystemPrompt = async () => {
     try {
+      console.log('📡 [DEBUG] Salvando Prompt em:', `${API_URL}/settings`);
       await axios.post(`${API_URL}/settings`, { key: 'gemini_system_prompt', value: geminiSystemPrompt });
       showToast('Prompt do sistema atualizado!', 'success');
     } catch (err) {
-      showToast('Erro ao salvar prompt', 'error');
+      console.error('❌ Erro Prompt:', err);
+      const details = err.response?.data?.details || err.message;
+      showToast(`Erro ao salvar prompt: ${details}`, 'error');
     }
   };
 
   const saveAuthorizedNumber = async () => {
     try {
+      console.log('📡 [DEBUG] Salvando Número Autorizado em:', `${API_URL}/settings`);
       await axios.post(`${API_URL}/settings`, { key: 'whatsapp_authorized_number', value: authorizedNumber });
       showToast('Segurança do WhatsApp atualizada!', 'success');
     } catch (err) {
-      showToast('Erro ao salvar configuração', 'error');
+      console.error('❌ Erro AuthorizedNumber:', err);
+      const details = err.response?.data?.details || err.message;
+      showToast(`Erro ao salvar configuração: ${details}`, 'error');
     }
   };
 
@@ -343,10 +349,13 @@ const App = () => {
     const newValue = e.target.checked;
     setProcessOutgoingMessages(newValue);
     try {
+      console.log('📡 [DEBUG] Toggling Outgoing em:', `${API_URL}/settings`);
       await axios.post(`${API_URL}/settings`, { key: 'process_outgoing_messages', value: newValue.toString() });
       showToast(newValue ? 'Processamento a terceiros ativado!' : 'Processamento a terceiros desativado!');
     } catch (err) {
-      showToast('Erro ao atualizar configuração', 'error');
+      console.error('❌ Erro ToggleOutgoing:', err);
+      const details = err.response?.data?.details || err.message;
+      showToast(`Erro ao atualizar configuração: ${details}`, 'error');
       setProcessOutgoingMessages(!newValue); // rollback on error
     }
   };

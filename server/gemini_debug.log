@@ -777,3 +777,42 @@ RAW:
     }
   ]
 }
+
+--- 2026-03-13T20:24:20.907Z ---
+BANCO: C6
+RAW:
+{
+  "banco": "C6",
+  "transacoes": [
+    {
+      "Data": "12/03/2026",
+      "Descricao": "DL*GOOGLE Google SAO PAU",
+      "Valor": "9,99"
+    },
+    {
+      "Data": "11/03/2026",
+      "Descricao": "PANIFICADORAE",
+      "Valor": "10,25"
+    },
+    {
+      "Data": "09/03/2026",
+      "Descricao": "FLEX ACADEMIA",
+      "Valor": "200,00"
+    },
+    {
+      "Data": "09/03/2026",
+      "Descricao": "MP *OLIVEIRAPROES",
+      "Valor": "35,00"
+    },
+    {
+      "Data": "09/03/2026",
+      "Descricao": "SHOPEE *USENUMMA",
+      "Valor": "10,41"
+    },
+    {
+      "Data": "08/03/2026",
+      "Descricao": "SHOPEE*A J MENEZES LTD",
+      "Valor": "40,39"
+    }
+  ]
+}
