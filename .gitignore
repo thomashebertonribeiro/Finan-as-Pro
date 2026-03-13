@@ -6,7 +6,7 @@ build/
 # Environment
 .env
 *.env
-
+ 
 # Auth & Sessions
 baileys_auth_info/
 baileys_store.json
