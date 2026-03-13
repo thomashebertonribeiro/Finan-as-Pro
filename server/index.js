@@ -324,7 +324,8 @@ app.post('/settings', async (req, res) => {
         await updateSetting(key, value);
         res.json({ message: `Configuração ${key} atualizada!` });
     } catch (error) {
-        res.status(500).json({ error: 'Erro ao atualizar configuração' });
+        console.error('ERRO SETTINGS POST:', error.message);
+        res.status(500).json({ error: 'Erro ao atualizar configuração', details: error.message });
     }
 });
 

@@ -1,15 +1,23 @@
 require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
 
-const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_ANON_KEY
-);
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+    console.error('❌ ERRO CRÍTICO: Variáveis de ambiente SUPABASE_URL ou SUPABASE_ANON_KEY não encontradas!');
+    console.error('Certifique-se de que elas estão configuradas no Painel do Railway (Variables) ou no arquivo .env');
+}
+
+const supabase = (supabaseUrl && supabaseKey) 
+    ? createClient(supabaseUrl, supabaseKey) 
+    : null;
 
 // ─────────────────────────────────────────────
 // init: seed default bank profiles if empty
 // ─────────────────────────────────────────────
 async function initDatabase() {
+    if (!supabase) return;
     console.log('--- Verificando conexão com Supabase ---');
 
     const { count, error } = await supabase
@@ -36,18 +44,21 @@ async function initDatabase() {
 // Settings
 // ─────────────────────────────────────────────
 async function getSettings() {
+    if (!supabase) return [];
     const { data, error } = await supabase.from('settings').select('*');
     if (error) throw error;
     return data;
 }
 
 async function getSetting(key) {
+    if (!supabase) return null;
     const { data, error } = await supabase.from('settings').select('value').eq('key', key).single();
     if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows found
     return data ? data.value : null;
 }
 
 async function updateSetting(key, value) {
+    if (!supabase) throw new Error("Supabase não configurado. Verifique as variáveis de ambiente.");
     const { error } = await supabase.from('settings').upsert({ key, value }, { onConflict: 'key' });
     if (error) throw error;
 }
@@ -56,6 +67,7 @@ async function updateSetting(key, value) {
 // Transactions
 // ─────────────────────────────────────────────
 async function getRows() {
+    if (!supabase) return [];
     const { data, error } = await supabase
         .from('transactions')
         .select('*')
@@ -65,6 +77,7 @@ async function getRows() {
 }
 
 async function saveTransactionsToDb(transactions) {
+    if (!supabase) throw new Error("Supabase não configurado.");
     const rows = transactions.map(t => ({
         data:           t['Data'],
         mes:            t['Mês'],
@@ -86,6 +99,7 @@ async function saveTransactionsToDb(transactions) {
 }
 
 async function updateTransactionInDb(id, t) {
+    if (!supabase) throw new Error("Supabase não configurado.");
     const { error } = await supabase.from('transactions').update({
         data:           t['Data'],
         mes:            t['Mês'],
@@ -101,6 +115,7 @@ async function updateTransactionInDb(id, t) {
 }
 
 async function deleteTransactionFromDb(id) {
+    if (!supabase) throw new Error("Supabase não configurado.");
     const { error } = await supabase.from('transactions').delete().eq('id', id);
     if (error) throw error;
 }
@@ -109,22 +124,26 @@ async function deleteTransactionFromDb(id) {
 // Suppliers
 // ─────────────────────────────────────────────
 async function getSuppliers() {
+    if (!supabase) return [];
     const { data, error } = await supabase.from('suppliers').select('*').order('nome', { ascending: true });
     if (error) throw error;
     return data;
 }
 
 async function addSupplier(nome, categoria) {
+    if (!supabase) throw new Error("Supabase não configurado.");
     const { error } = await supabase.from('suppliers').insert({ nome, categoria });
     if (error) throw error;
 }
 
 async function updateSupplier(id, nome, categoria) {
+    if (!supabase) throw new Error("Supabase não configurado.");
     const { error } = await supabase.from('suppliers').update({ nome, categoria }).eq('id', id);
     if (error) throw error;
 }
 
 async function deleteSupplierFromDb(id) {
+    if (!supabase) throw new Error("Supabase não configurado.");
     const { error } = await supabase.from('suppliers').delete().eq('id', id);
     if (error) throw error;
 }
@@ -133,22 +152,26 @@ async function deleteSupplierFromDb(id) {
 // Bank Profiles
 // ─────────────────────────────────────────────
 async function getBankProfiles() {
+    if (!supabase) return [];
     const { data, error } = await supabase.from('bank_profiles').select('*').order('nome', { ascending: true });
     if (error) throw error;
     return data;
 }
 
 async function addBankProfile(nome, identificador, palavras_ignorar, cartao_final) {
+    if (!supabase) throw new Error("Supabase não configurado.");
     const { error } = await supabase.from('bank_profiles').insert({ nome, identificador, palavras_ignorar, cartao_final });
     if (error) throw error;
 }
 
 async function updateBankProfile(id, nome, identificador, palavras_ignorar, cartao_final) {
+    if (!supabase) throw new Error("Supabase não configurado.");
     const { error } = await supabase.from('bank_profiles').update({ nome, identificador, palavras_ignorar, cartao_final }).eq('id', id);
     if (error) throw error;
 }
 
 async function deleteBankProfile(id) {
+    if (!supabase) throw new Error("Supabase não configurado.");
     const { error } = await supabase.from('bank_profiles').delete().eq('id', id);
     if (error) throw error;
 }

@@ -355,7 +355,8 @@ const App = () => {
       await axios.post(`${API_URL}/settings`, { key: 'gemini_api_key', value: geminiApiKey });
       showToast('🤖 Gemini IA ativada com sucesso!', 'success');
     } catch (err) {
-      showToast('Erro ao salvar chave Gemini', 'error');
+      const details = err.response?.data?.details || err.message;
+      showToast(`Erro ao salvar: ${details}`, 'error');
     }
   };
 
@@ -404,6 +405,7 @@ const App = () => {
     fetchSuppliers();
     fetchSettings();
     fetchBankProfiles();
+    fetchWaStatus();
     
     // Polling global para capturar lançamentos externos (WhatsApp/IA)
     const interval = setInterval(async () => {

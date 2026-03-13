@@ -42,17 +42,23 @@ async function connectToWhatsApp() {
         if (qr) {
             qrCode = qr;
             connectionStatus = 'qr_ready';
-            console.log('--- QR Code Recebido do Baileys ---');
+            console.log('--- QR Code Recebido do Baileys: Disponível para escaneamento ---');
         }
 
         if (connection === 'close') {
-            const shouldReconnect = (lastDisconnect.error instanceof Boom) ? lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut : true;
-            console.error('--- Conexão WhatsApp Fechada:', lastDisconnect.error?.message);
+            const statusCode = (lastDisconnect.error instanceof Boom) ? lastDisconnect.error.output.statusCode : 0;
+            const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+            
+            console.error(`--- Conexão WhatsApp Fechada (Status: ${statusCode}):`, lastDisconnect.error?.message);
+            
             connectionStatus = shouldReconnect ? 'connecting' : 'disconnected';
             qrCode = null;
+
             if (shouldReconnect) {
-                console.log('--- Tentando Reconectar... ---');
-                connectToWhatsApp();
+                console.log('--- Tentando Reconectar em 5 segundos... ---');
+                setTimeout(() => connectToWhatsApp(), 5000);
+            } else {
+                console.log('--- Desconectado: Usuário realizou logout ou sessão expirada. ---');
             }
         } else if (connection === 'open') {
             console.log('--- WhatsApp Conectado com Sucesso! ---');
