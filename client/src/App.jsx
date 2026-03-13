@@ -14,6 +14,7 @@ import { supabase } from './supabaseClient';
 import Auth from './Auth';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
+console.log('🌐 [DEBUG] API_URL configurada:', API_URL);
 
 const DEFAULT_CATEGORIES = [
   "Investimentos", "Alimentação", "Transporte", "Saúde", "Lazer",
@@ -352,9 +353,11 @@ const App = () => {
 
   const saveGeminiApiKey = async () => {
     try {
+      console.log('📡 Enviando configuração para:', `${API_URL}/settings`);
       await axios.post(`${API_URL}/settings`, { key: 'gemini_api_key', value: geminiApiKey });
       showToast('🤖 Gemini IA ativada com sucesso!', 'success');
     } catch (err) {
+      console.error('❌ Erro de Rede Detalhado:', err);
       const details = err.response?.data?.details || err.message;
       showToast(`Erro ao salvar: ${details}`, 'error');
     }
