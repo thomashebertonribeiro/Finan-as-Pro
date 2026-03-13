@@ -1,0 +1,779 @@
+
+--- ERROR 2026-03-11T20:08:13.445Z ---
+[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at handleResponseNotOk (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:434:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeRequest (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:403:9)
+    at async generateContent (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:867:22)
+    at async processImageWithGemini (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\gemini-service.js:75:24)
+    at async handleImageMessage (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:213:24)
+    at async EventEmitter.<anonymous> (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:139:25)
+
+--- ERROR 2026-03-11T20:10:47.783Z ---
+[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent: [404 Not Found] models/gemini-1.5-flash-latest is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent: [404 Not Found] models/gemini-1.5-flash-latest is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at handleResponseNotOk (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:434:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeRequest (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:403:9)
+    at async generateContent (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:867:22)
+    at async processImageWithGemini (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\gemini-service.js:75:24)
+    at async handleImageMessage (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:213:24)
+    at async EventEmitter.<anonymous> (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:139:25)
+
+--- ERROR 2026-03-11T20:11:57.257Z ---
+[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent: [404 Not Found] models/gemini-1.5-flash-latest is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent: [404 Not Found] models/gemini-1.5-flash-latest is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at handleResponseNotOk (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:434:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeRequest (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:403:9)
+    at async generateContent (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:867:22)
+    at async processImageWithGemini (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\gemini-service.js:75:24)
+    at async handleImageMessage (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:213:24)
+    at async EventEmitter.<anonymous> (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:139:25)
+
+--- ERROR 2026-03-11T20:12:34.609Z ---
+[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent: [404 Not Found] models/gemini-1.5-flash-latest is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent: [404 Not Found] models/gemini-1.5-flash-latest is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at handleResponseNotOk (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:434:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeRequest (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:403:9)
+    at async generateContent (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:867:22)
+    at async processImageWithGemini (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\gemini-service.js:75:24)
+    at async handleImageMessage (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:213:24)
+    at async EventEmitter.<anonymous> (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:139:25)
+
+--- ERROR 2026-03-11T20:17:34.580Z ---
+[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent: [404 Not Found] models/gemini-3-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent: [404 Not Found] models/gemini-3-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at handleResponseNotOk (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:434:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeRequest (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:403:9)
+    at async generateContent (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:867:22)
+    at async processImageWithGemini (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\gemini-service.js:75:24)
+    at async handleImageMessage (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:213:24)
+    at async EventEmitter.<anonymous> (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:139:25)
+
+--- 2026-03-11T20:23:56.312Z ---
+BANCO: C6
+RAW:
+```json
+{
+  "banco": "C6",
+  "transacoes": [
+    {
+      "Data": "30/01/2024",
+      "Descricao": "MERCADO MASTER ECONOM",
+      "Valor": "15,98"
+    },
+    {
+      "Data": "29/01/2024",
+      "Descricao": "MEGAAARTESANATO LTDA",
+      "Valor": "27,50"
+    },
+    {
+      "Data": "29/01/2024",
+      "Descricao": "MERCADO MASTER ECONOM",
+      "Valor": "20,66"
+    },
+    {
+      "Data": "28/01/2024",
+      "Descricao": "DROGARIA SAO PAULO SA",
+      "Valor": "12,99"
+    },
+    {
+      "Data": "27/01/2024",
+      "Descricao": "FUSI FOODS LTDA",
+      "Valor": "23,65"
+    },
+    {
+      "Data": "26/01/2024",
+      "Descricao": "NETFLIX.COM",
+      "Valor": "59,90"
+    },
+    {
+      "Data": "24/01/2024",
+      "Descricao": "RESTAURANTE TRADICAO",
+      "Valor": "57,00"
+    }
+  ]
+}
+```
+
+--- 2026-03-11T20:43:22.576Z ---
+BANCO: C6
+RAW:
+```json
+{
+  "banco": "C6",
+  "transacoes": [
+    {
+      "Data": "30/01/2024",
+      "Descricao": "MERCADO MASTER ECONOM",
+      "Valor": "15,98"
+    },
+    {
+      "Data": "29/01/2024",
+      "Descricao": "MEGAAARTESANATO LTDA",
+      "Valor": "27,50"
+    },
+    {
+      "Data": "29/01/2024",
+      "Descricao": "MERCADO MASTER ECONOM",
+      "Valor": "20,66"
+    },
+    {
+      "Data": "28/01/2024",
+      "Descricao": "DROGARIA SAO PAULO SA",
+      "Valor": "12,99"
+    },
+    {
+      "Data": "27/01/2024",
+      "Descricao": "FUSI FOODS LTDA",
+      "Valor": "23,65"
+    },
+    {
+      "Data": "26/01/2024",
+      "Descricao": "NETFLIX.COM",
+      "Valor": "59,90"
+    },
+    {
+      "Data": "24/01/2024",
+      "Descricao": "RESTAURANTE TRADICAO",
+      "Valor": "57,09"
+    }
+  ]
+}
+```
+
+--- 2026-03-12T15:03:05.850Z ---
+BANCO: Desconhecido
+RAW:
+```json
+{
+  "banco": null,
+  "transacoes": []
+}
+```
+
+--- 2026-03-12T15:03:08.690Z ---
+BANCO: Desconhecido
+RAW:
+```json
+{
+  "banco": null,
+  "transacoes": []
+}
+```
+
+--- 2026-03-12T15:03:08.903Z ---
+BANCO: Desconhecido
+RAW:
+```json
+{
+  "banco": "",
+  "transacoes": []
+}
+```
+
+--- 2026-03-12T15:03:10.272Z ---
+BANCO: Desconhecido
+RAW:
+```json
+{
+  "banco": null,
+  "transacoes": []
+}
+```
+
+--- 2026-03-12T15:03:13.574Z ---
+BANCO: N/A
+RAW:
+```json
+{
+  "banco": "N/A",
+  "transacoes": []
+}
+```
+
+--- 2026-03-12T15:03:15.919Z ---
+BANCO: Desconhecido
+RAW:
+```json
+{
+  "banco": null,
+  "transacoes": []
+}
+```
+
+--- 2026-03-12T15:08:35.691Z ---
+BANCO: Desconhecido
+RAW:
+```json
+{
+  "banco": null,
+  "transacoes": []
+}
+```
+
+--- ERROR 2026-03-12T15:08:36.497Z ---
+Unexpected token 'A', "A imagem f"... is not valid JSON
+SyntaxError: Unexpected token 'A', "A imagem f"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at processImageWithGemini (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\gemini-service.js:80:29)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async handleImageMessage (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:213:24)
+    at async EventEmitter.<anonymous> (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:139:25)
+
+--- 2026-03-12T15:37:25.538Z ---
+BANCO: Desconhecido
+RAW:
+```json
+{
+  "banco": null,
+  "transacoes": []
+}
+```
+
+--- 2026-03-12T19:18:43.125Z ---
+BANCO: UNKNOWN
+RAW:
+```json
+{
+  "banco": "UNKNOWN",
+  "transacoes": []
+}
+```
+
+--- INFO 2026-03-12T19:18:43.131Z ---
+Banco: UNKNOWN | Nenhuma transação extraída após filtros.
+
+--- PARSE ERROR 2026-03-12T19:18:43.817Z ---
+TEXTO RECEBIDO:
+Não foi possível extrair transações. A imagem fornecida é de um carro e não contém extrato bancário ou informações financeiras.
+ERRO: Unexpected token 'N', "Não foi po"... is not valid JSON
+
+--- ERROR 2026-03-12T19:18:43.818Z ---
+Resposta da IA não é um JSON válido: Unexpected token 'N', "Não foi po"... is not valid JSON
+Error: Resposta da IA não é um JSON válido: Unexpected token 'N', "Não foi po"... is not valid JSON
+    at processImageWithGemini (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\gemini-service.js:95:19)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async handleImageMessage (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:219:24)
+    at async EventEmitter.<anonymous> (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:145:25)
+
+--- 2026-03-12T19:18:46.283Z ---
+BANCO: NÃO_IDENTIFICADO
+RAW:
+```json
+{
+  "banco": "NÃO_IDENTIFICADO",
+  "transacoes": []
+}
+```
+
+--- INFO 2026-03-12T19:18:46.284Z ---
+Banco: NÃO_IDENTIFICADO | Nenhuma transação extraída após filtros.
+
+--- 2026-03-12T19:18:47.911Z ---
+BANCO: Desconhecido
+RAW:
+```json
+{
+  "banco": null,
+  "transacoes": []
+}
+```
+
+--- INFO 2026-03-12T19:18:47.912Z ---
+Banco: Desconhecido | Nenhuma transação extraída após filtros.
+
+--- ERROR 2026-03-12T19:43:57.432Z ---
+[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at handleResponseNotOk (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:434:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeRequest (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:403:9)
+    at async generateContent (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:867:22)
+    at async processImageWithGemini (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\gemini-service.js:72:24)
+    at async handleImageMessage (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:234:24)
+    at async EventEmitter.<anonymous> (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:161:25)
+
+--- ERROR 2026-03-12T19:44:28.516Z ---
+[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at handleResponseNotOk (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:434:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeRequest (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:403:9)
+    at async generateContent (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:867:22)
+    at async processImageWithGemini (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\gemini-service.js:72:24)
+    at async handleImageMessage (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:234:24)
+    at async EventEmitter.<anonymous> (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:161:25)
+
+--- ERROR 2026-03-12T19:46:18.617Z ---
+[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at handleResponseNotOk (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:434:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeRequest (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:403:9)
+    at async generateContent (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:867:22)
+    at async processImageWithGemini (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\gemini-service.js:72:24)
+    at async handleImageMessage (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:234:24)
+    at async EventEmitter.<anonymous> (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:161:25)
+
+--- ERROR 2026-03-12T19:46:18.631Z ---
+[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at handleResponseNotOk (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:434:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeRequest (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:403:9)
+    at async generateContent (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:867:22)
+    at async processImageWithGemini (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\gemini-service.js:72:24)
+    at async handleImageMessage (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:234:24)
+    at async EventEmitter.<anonymous> (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:161:25)
+
+--- ERROR 2026-03-12T19:46:18.655Z ---
+[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at handleResponseNotOk (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:434:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeRequest (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:403:9)
+    at async generateContent (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:867:22)
+    at async processImageWithGemini (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\gemini-service.js:72:24)
+    at async handleImageMessage (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:234:24)
+    at async EventEmitter.<anonymous> (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:161:25)
+
+--- ERROR 2026-03-12T19:46:23.834Z ---
+[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at handleResponseNotOk (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:434:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeRequest (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:403:9)
+    at async generateContent (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:867:22)
+    at async processImageWithGemini (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\gemini-service.js:72:24)
+    at async handleImageMessage (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:234:24)
+    at async EventEmitter.<anonymous> (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:161:25)
+
+--- ERROR 2026-03-12T19:46:23.840Z ---
+[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at handleResponseNotOk (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:434:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeRequest (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:403:9)
+    at async generateContent (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:867:22)
+    at async processImageWithGemini (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\gemini-service.js:72:24)
+    at async handleImageMessage (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:234:24)
+    at async EventEmitter.<anonymous> (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:161:25)
+
+--- ERROR 2026-03-12T19:46:28.365Z ---
+[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at handleResponseNotOk (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:434:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeRequest (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:403:9)
+    at async generateContent (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:867:22)
+    at async processImageWithGemini (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\gemini-service.js:72:24)
+    at async handleImageMessage (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:234:24)
+    at async EventEmitter.<anonymous> (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:161:25)
+
+--- ERROR 2026-03-12T19:46:31.828Z ---
+[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at handleResponseNotOk (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:434:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeRequest (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:403:9)
+    at async generateContent (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:867:22)
+    at async processImageWithGemini (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\gemini-service.js:72:24)
+    at async handleImageMessage (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:234:24)
+    at async EventEmitter.<anonymous> (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:161:25)
+
+--- ERROR 2026-03-12T19:46:35.899Z ---
+[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at handleResponseNotOk (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:434:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeRequest (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:403:9)
+    at async generateContent (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:867:22)
+    at async processImageWithGemini (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\gemini-service.js:72:24)
+    at async handleImageMessage (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:234:24)
+    at async EventEmitter.<anonymous> (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:161:25)
+
+--- ERROR 2026-03-12T19:46:39.394Z ---
+[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at handleResponseNotOk (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:434:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeRequest (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:403:9)
+    at async generateContent (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:867:22)
+    at async processImageWithGemini (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\gemini-service.js:72:24)
+    at async handleImageMessage (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:234:24)
+    at async EventEmitter.<anonymous> (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:161:25)
+
+--- ERROR 2026-03-12T19:46:42.880Z ---
+[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at handleResponseNotOk (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:434:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeRequest (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:403:9)
+    at async generateContent (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:867:22)
+    at async processImageWithGemini (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\gemini-service.js:72:24)
+    at async handleImageMessage (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:234:24)
+    at async EventEmitter.<anonymous> (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:161:25)
+
+--- ERROR 2026-03-12T19:46:46.437Z ---
+[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at handleResponseNotOk (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:434:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeRequest (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:403:9)
+    at async generateContent (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:867:22)
+    at async processImageWithGemini (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\gemini-service.js:72:24)
+    at async handleImageMessage (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:234:24)
+    at async EventEmitter.<anonymous> (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:161:25)
+
+--- ERROR 2026-03-12T19:46:49.985Z ---
+[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at handleResponseNotOk (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:434:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeRequest (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:403:9)
+    at async generateContent (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:867:22)
+    at async processImageWithGemini (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\gemini-service.js:72:24)
+    at async handleImageMessage (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:234:24)
+    at async EventEmitter.<anonymous> (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:161:25)
+
+--- ERROR 2026-03-12T20:02:05.431Z ---
+[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent: [404 Not Found] models/gemini-1.5-flash-latest is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent: [404 Not Found] models/gemini-1.5-flash-latest is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at handleResponseNotOk (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:434:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeRequest (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:403:9)
+    at async generateContent (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:867:22)
+    at async processImageWithGemini (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\gemini-service.js:72:24)
+    at async handleImageMessage (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:243:24)
+    at async EventEmitter.<anonymous> (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:170:25)
+
+--- ERROR 2026-03-12T20:06:22.724Z ---
+[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent: [404 Not Found] models/gemini-1.5-flash-latest is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent: [404 Not Found] models/gemini-1.5-flash-latest is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at handleResponseNotOk (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:434:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeRequest (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:403:9)
+    at async generateContent (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:867:22)
+    at async processImageWithGemini (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\gemini-service.js:72:24)
+    at async handleImageMessage (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:246:24)
+    at async EventEmitter.<anonymous> (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:173:25)
+
+--- 2026-03-12T20:14:02.367Z ---
+BANCO: C6
+RAW:
+{
+  "banco": "C6",
+  "transacoes": [
+    {
+      "Data": "30/01/2026",
+      "Descricao": "MERCADO MASTER ECONOM",
+      "Valor": "15,98"
+    },
+    {
+      "Data": "29/01/2026",
+      "Descricao": "MEGAARTESANATO LTDA",
+      "Valor": "27,50"
+    },
+    {
+      "Data": "29/01/2026",
+      "Descricao": "MERCADO MASTER ECONOM",
+      "Valor": "20,66"
+    },
+    {
+      "Data": "28/01/2026",
+      "Descricao": "DROGARIA SAO PAULO SA",
+      "Valor": "12,99"
+    },
+    {
+      "Data": "27/01/2026",
+      "Descricao": "FUSI FOODS LTDA",
+      "Valor": "23,65"
+    },
+    {
+      "Data": "27/01/2026",
+      "Descricao": "MP *LILIANEPATRIC",
+      "Valor": "10,45"
+    },
+    {
+      "Data": "26/01/2026",
+      "Descricao": "NETFLIX.COM",
+      "Valor": "59,90"
+    },
+    {
+      "Data": "24/01/2026",
+      "Descricao": "RESTAURANTE TRADICAO",
+      "Valor": "57,00"
+    }
+  ]
+}
+
+--- 2026-03-12T20:15:14.916Z ---
+BANCO: C6
+RAW:
+{
+  "banco": "C6",
+  "transacoes": [
+    {
+      "Data": "30/01/2026",
+      "Descricao": "MERCADO MASTER ECONOM",
+      "Valor": "15,98"
+    },
+    {
+      "Data": "29/01/2026",
+      "Descricao": "MEGAAARTESANATO LTDA",
+      "Valor": "27,50"
+    },
+    {
+      "Data": "29/01/2026",
+      "Descricao": "MERCADO MASTER ECONOM",
+      "Valor": "20,66"
+    },
+    {
+      "Data": "28/01/2026",
+      "Descricao": "DROGARIA SAO PAULO SA",
+      "Valor": "12,99"
+    },
+    {
+      "Data": "27/01/2026",
+      "Descricao": "FUSI FOODS LTDA",
+      "Valor": "23,65"
+    },
+    {
+      "Data": "27/01/2026",
+      "Descricao": "MP *LILIANEPATRIC",
+      "Valor": "10,45"
+    },
+    {
+      "Data": "26/01/2026",
+      "Descricao": "NETFLIX.COM",
+      "Valor": "59,90"
+    },
+    {
+      "Data": "24/01/2026",
+      "Descricao": "RESTAURANTE TRADICAO",
+      "Valor": "57,09"
+    }
+  ]
+}
+
+--- 2026-03-12T20:16:32.685Z ---
+BANCO: C6
+RAW:
+{
+  "banco": "C6",
+  "transacoes": [
+    {
+      "Data": "30/01/2026",
+      "Descricao": "MERCADO MASTER",
+      "Valor": "15,98"
+    },
+    {
+      "Data": "29/01/2026",
+      "Descricao": "MEGAAARTESANATO LTDA",
+      "Valor": "27,50"
+    },
+    {
+      "Data": "29/01/2026",
+      "Descricao": "MERCADO MASTER",
+      "Valor": "20,66"
+    },
+    {
+      "Data": "28/01/2026",
+      "Descricao": "DROGARIA SAO PAULO SA",
+      "Valor": "12,99"
+    },
+    {
+      "Data": "27/01/2026",
+      "Descricao": "FUSI FOODS LTDA",
+      "Valor": "23,65"
+    },
+    {
+      "Data": "27/01/2026",
+      "Descricao": "MP *LILIANEPATRIC",
+      "Valor": "10,45"
+    },
+    {
+      "Data": "26/01/2026",
+      "Descricao": "NETFLIX.COM",
+      "Valor": "59,90"
+    }
+  ]
+}
+
+--- 2026-03-12T20:26:33.542Z ---
+BANCO: C6
+RAW:
+{
+  "banco": "C6",
+  "transacoes": [
+    {
+      "Data": "30/01/2026",
+      "Descricao": "MERCADO MASTER",
+      "Valor": "15,98"
+    },
+    {
+      "Data": "29/01/2026",
+      "Descricao": "MEGAARTESANATO LTDA",
+      "Valor": "27,50"
+    },
+    {
+      "Data": "29/01/2026",
+      "Descricao": "MERCADO MASTER",
+      "Valor": "20,66"
+    },
+    {
+      "Data": "28/01/2026",
+      "Descricao": "DROGARIA SAO PAULO SA",
+      "Valor": "12,99"
+    },
+    {
+      "Data": "27/01/2026",
+      "Descricao": "FUSI FOODS LTDA",
+      "Valor": "23,65"
+    },
+    {
+      "Data": "27/01/2026",
+      "Descricao": "MP *LILIANEPATRIC",
+      "Valor": "10,45"
+    },
+    {
+      "Data": "26/01/2026",
+      "Descricao": "NETFLIX.COM",
+      "Valor": "59,90"
+    }
+  ]
+}
+
+--- ERROR 2026-03-12T20:46:05.420Z ---
+[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent: [429 Too Many Requests] You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 55.119128183s. [{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Learn more about Gemini API quotas","url":"https://ai.google.dev/gemini-api/docs/rate-limits"}]},{"@type":"type.googleapis.com/google.rpc.QuotaFailure","violations":[{"quotaMetric":"generativelanguage.googleapis.com/generate_content_free_tier_requests","quotaId":"GenerateRequestsPerDayPerProjectPerModel-FreeTier","quotaDimensions":{"location":"global","model":"gemini-2.5-flash"},"quotaValue":"20"}]},{"@type":"type.googleapis.com/google.rpc.RetryInfo","retryDelay":"55s"}]
+Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent: [429 Too Many Requests] You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 55.119128183s. [{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Learn more about Gemini API quotas","url":"https://ai.google.dev/gemini-api/docs/rate-limits"}]},{"@type":"type.googleapis.com/google.rpc.QuotaFailure","violations":[{"quotaMetric":"generativelanguage.googleapis.com/generate_content_free_tier_requests","quotaId":"GenerateRequestsPerDayPerProjectPerModel-FreeTier","quotaDimensions":{"location":"global","model":"gemini-2.5-flash"},"quotaValue":"20"}]},{"@type":"type.googleapis.com/google.rpc.RetryInfo","retryDelay":"55s"}]
+    at handleResponseNotOk (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:434:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeRequest (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:403:9)
+    at async generateContent (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:867:22)
+    at async processImageWithGemini (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\gemini-service.js:72:24)
+    at async handleImageMessage (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:246:24)
+    at async EventEmitter.<anonymous> (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:173:25)
+
+--- ERROR 2026-03-12T20:46:05.459Z ---
+[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent: [429 Too Many Requests] You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 55.115986519s. [{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Learn more about Gemini API quotas","url":"https://ai.google.dev/gemini-api/docs/rate-limits"}]},{"@type":"type.googleapis.com/google.rpc.QuotaFailure","violations":[{"quotaMetric":"generativelanguage.googleapis.com/generate_content_free_tier_requests","quotaId":"GenerateRequestsPerDayPerProjectPerModel-FreeTier","quotaDimensions":{"location":"global","model":"gemini-2.5-flash"},"quotaValue":"20"}]},{"@type":"type.googleapis.com/google.rpc.RetryInfo","retryDelay":"55s"}]
+Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent: [429 Too Many Requests] You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 55.115986519s. [{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Learn more about Gemini API quotas","url":"https://ai.google.dev/gemini-api/docs/rate-limits"}]},{"@type":"type.googleapis.com/google.rpc.QuotaFailure","violations":[{"quotaMetric":"generativelanguage.googleapis.com/generate_content_free_tier_requests","quotaId":"GenerateRequestsPerDayPerProjectPerModel-FreeTier","quotaDimensions":{"location":"global","model":"gemini-2.5-flash"},"quotaValue":"20"}]},{"@type":"type.googleapis.com/google.rpc.RetryInfo","retryDelay":"55s"}]
+    at handleResponseNotOk (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:434:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeRequest (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:403:9)
+    at async generateContent (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\node_modules\@google\generative-ai\dist\index.js:867:22)
+    at async processImageWithGemini (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\gemini-service.js:72:24)
+    at async handleImageMessage (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:246:24)
+    at async EventEmitter.<anonymous> (C:\Users\Thomas.Ribeiro\Documents\IA\Finanças pessoais\server\whatsapp-service.js:173:25)
+
+--- 2026-03-12T20:46:07.606Z ---
+BANCO: Desconhecido
+RAW:
+{
+  "banco": "Desconhecido",
+  "transacoes": []
+}
+
+--- INFO 2026-03-12T20:46:07.610Z ---
+Banco: Desconhecido | Nenhuma transação extraída após filtros.
+
+--- 2026-03-12T20:46:08.206Z ---
+BANCO: Desconhecido
+RAW:
+{
+  "banco": "Desconhecido",
+  "transacoes": []
+}
+
+--- INFO 2026-03-12T20:46:08.208Z ---
+Banco: Desconhecido | Nenhuma transação extraída após filtros.
+
+--- 2026-03-12T20:46:09.459Z ---
+BANCO: Desconhecido
+RAW:
+{
+  "banco": "Desconhecido",
+  "transacoes": [
+    {
+      "Data": "01/01/2026",
+      "Descricao": "CHINA EXPRESS",
+      "Valor": "3,15"
+    }
+  ]
+}
+
+--- 2026-03-13T11:43:27.644Z ---
+BANCO: Ourocard
+RAW:
+{
+  "banco": "Ourocard",
+  "transacoes": [
+    {
+      "Data": "31/01/2026",
+      "Descricao": "Padaria Multipao",
+      "Valor": "3,27"
+    },
+    {
+      "Data": "31/01/2026",
+      "Descricao": "Lda",
+      "Valor": "18,50"
+    },
+    {
+      "Data": "31/01/2026",
+      "Descricao": "Indigo",
+      "Valor": "18,00"
+    },
+    {
+      "Data": "31/01/2026",
+      "Descricao": "Uber",
+      "Valor": "18,12"
+    },
+    {
+      "Data": "01/02/2026",
+      "Descricao": "Allianz Segu",
+      "Valor": "148,05"
+    }
+  ]
+}
+
+--- 2026-03-13T16:32:43.417Z ---
+BANCO: C6
+RAW:
+{
+  "banco": "C6",
+  "transacoes": [
+    {
+      "Data": "12/03/2026",
+      "Descricao": "Google",
+      "Valor": "9,99"
+    },
+    {
+      "Data": "11/03/2026",
+      "Descricao": "PANIFICADORA",
+      "Valor": "10,25"
+    },
+    {
+      "Data": "09/03/2026",
+      "Descricao": "FLEX ACADEMIA",
+      "Valor": "200,00"
+    },
+    {
+      "Data": "09/03/2026",
+      "Descricao": "OLIVEIRAPROES",
+      "Valor": "35,00"
+    }
+  ]
+}

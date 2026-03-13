@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+dist/
+build/
+
+# Environment
+.env
+*.env
+
+# Auth & Sessions
+baileys_auth_info/
+baileys_store.json
+temp_wa_*.jpg
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# System Files
+.DS_Store
+Thumbs.db

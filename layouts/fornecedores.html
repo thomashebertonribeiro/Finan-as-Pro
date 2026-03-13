@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+
+<html lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#5b13ec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#161022",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+<!-- Top Navigation Bar -->
+<header class="sticky top-0 z-50 glass-card border-b border-primary/10 px-6 lg:px-20 py-4 flex items-center justify-between">
+<div class="flex items-center gap-10">
+<div class="flex items-center gap-3">
+<div class="bg-primary p-2 rounded-lg text-white">
+<span class="material-symbols-outlined block">account_balance_wallet</span>
+</div>
+<h2 class="text-xl font-bold tracking-tight text-primary">Finanças Pro</h2>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-sm font-semibold text-slate-600 hover:text-primary transition-colors" href="#">Dashboard</a>
+<a class="text-sm font-semibold text-primary" href="#">Fornecedores</a>
+<a class="text-sm font-semibold text-slate-600 hover:text-primary transition-colors" href="#">Categorias</a>
+<a class="text-sm font-semibold text-slate-600 hover:text-primary transition-colors" href="#">Relatórios</a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden sm:flex items-center bg-primary/5 rounded-full px-4 py-2 border border-primary/10 focus-within:border-primary/30 transition-all">
+<span class="material-symbols-outlined text-primary/60 text-xl">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-48 placeholder:text-slate-400" placeholder="Buscar fornecedores..." type="text"/>
+</div>
+<div class="flex items-center gap-3">
+<div class="text-right hidden lg:block">
+<p class="text-xs font-bold text-slate-900">Empresa Alpha</p>
+<p class="text-[10px] text-primary font-medium">Plano Premium</p>
+</div>
+<div class="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center border-2 border-primary/20 overflow-hidden" data-alt="User profile avatar silhouette">
+<span class="material-symbols-outlined text-primary">person</span>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-1 flex flex-col max-w-7xl mx-auto w-full p-6 lg:p-10 gap-8">
+<!-- Breadcrumbs & Title -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div class="space-y-2">
+<div class="flex items-center gap-2 text-xs font-semibold text-primary/60 uppercase tracking-wider">
+<span>Gestão</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="text-primary">Fornecedores</span>
+</div>
+<h1 class="text-4xl font-black text-slate-900 leading-tight">Gestão de Fornecedores</h1>
+<p class="text-slate-500 max-w-lg">Visualize, gerencie e categorize todos os seus parceiros comerciais em um único lugar.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-6 py-3 bg-white border border-primary/10 text-primary font-bold rounded-xl hover:bg-primary/5 transition-all shadow-sm">
+<span class="material-symbols-outlined text-lg">download</span>
+<span>Exportar</span>
+</button>
+<button class="flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-xl hover:opacity-90 transition-all shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-lg">add</span>
+<span>Novo Fornecedor</span>
+</button>
+</div>
+</div>
+<!-- Dashboard Mini Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="glass-card p-6 rounded-2xl flex items-center gap-5">
+<div class="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">group</span>
+</div>
+<div>
+<p class="text-slate-500 text-sm font-medium">Total de Fornecedores</p>
+<p class="text-2xl font-bold">128</p>
+</div>
+</div>
+<div class="glass-card p-6 rounded-2xl flex items-center gap-5">
+<div class="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
+<span class="material-symbols-outlined">category</span>
+</div>
+<div>
+<p class="text-slate-500 text-sm font-medium">Categorias Ativas</p>
+<p class="text-2xl font-bold">14</p>
+</div>
+</div>
+<div class="glass-card p-6 rounded-2xl flex items-center gap-5">
+<div class="h-12 w-12 rounded-xl bg-green-100 flex items-center justify-center text-green-600">
+<span class="material-symbols-outlined">event_repeat</span>
+</div>
+<div>
+<p class="text-slate-500 text-sm font-medium">Uso Frequente</p>
+<p class="text-2xl font-bold">42</p>
+</div>
+</div>
+</div>
+<!-- Main Content Area -->
+<div class="glass-card rounded-3xl overflow-hidden flex flex-col">
+<!-- Tabs -->
+<div class="flex border-b border-primary/5 px-8 pt-4 gap-8">
+<button class="flex flex-col items-center border-b-2 border-primary text-primary pb-4 font-bold text-sm tracking-wide">
+                    Todos os Fornecedores
+                </button>
+<button class="flex flex-col items-center border-b-2 border-transparent text-slate-400 hover:text-slate-600 pb-4 font-bold text-sm tracking-wide transition-colors">
+                    Categorias
+                </button>
+<button class="flex flex-col items-center border-b-2 border-transparent text-slate-400 hover:text-slate-600 pb-4 font-bold text-sm tracking-wide transition-colors">
+                    Arquivados
+                </button>
+</div>
+<!-- Table Container -->
+<div class="p-4 @container">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-separate border-spacing-y-2">
+<thead>
+<tr class="text-slate-400 uppercase text-[10px] font-extrabold tracking-widest">
+<th class="px-6 py-4">Nome do Fornecedor</th>
+<th class="px-6 py-4">Categoria Associada</th>
+<th class="px-6 py-4">Frequência de Uso</th>
+<th class="px-6 py-4 text-right">Ações</th>
+</tr>
+</thead>
+<tbody class="text-slate-700">
+<!-- Row 1 -->
+<tr class="group hover:bg-primary/[0.02] transition-colors rounded-xl overflow-hidden">
+<td class="px-6 py-4 font-semibold text-slate-900 rounded-l-xl">
+<div class="flex items-center gap-3">
+<div class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center" data-alt="Corporate logo placeholder for Cloud Services">
+<span class="material-symbols-outlined text-slate-400 text-sm">business</span>
+</div>
+                                        Cloud Services Inc.
+                                    </div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary">
+                                        Infraestrutura
+                                    </span>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500">
+<div class="flex items-center gap-2">
+<div class="h-1.5 w-1.5 rounded-full bg-green-500"></div>
+                                        Diário
+                                    </div>
+</td>
+<td class="px-6 py-4 text-right rounded-r-xl">
+<button class="p-2 hover:bg-primary/10 rounded-lg text-primary transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button class="p-2 hover:bg-red-50 rounded-lg text-slate-300 hover:text-red-500 transition-colors">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="group hover:bg-primary/[0.02] transition-colors rounded-xl overflow-hidden">
+<td class="px-6 py-4 font-semibold text-slate-900 rounded-l-xl">
+<div class="flex items-center gap-3">
+<div class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center" data-alt="Abstract stationery icon">
+<span class="material-symbols-outlined text-slate-400 text-sm">edit_note</span>
+</div>
+                                        Papelaria Central
+                                    </div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-600">
+                                        Escritório
+                                    </span>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500">
+<div class="flex items-center gap-2">
+<div class="h-1.5 w-1.5 rounded-full bg-slate-300"></div>
+                                        Mensal
+                                    </div>
+</td>
+<td class="px-6 py-4 text-right rounded-r-xl">
+<button class="p-2 hover:bg-primary/10 rounded-lg text-primary transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button class="p-2 hover:bg-red-50 rounded-lg text-slate-300 hover:text-red-500 transition-colors">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="group hover:bg-primary/[0.02] transition-colors rounded-xl overflow-hidden">
+<td class="px-6 py-4 font-semibold text-slate-900 rounded-l-xl">
+<div class="flex items-center gap-3">
+<div class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center" data-alt="Delivery truck icon for logistics">
+<span class="material-symbols-outlined text-slate-400 text-sm">local_shipping</span>
+</div>
+                                        Logística Express
+                                    </div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-600">
+                                        Operacional
+                                    </span>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500">
+<div class="flex items-center gap-2">
+<div class="h-1.5 w-1.5 rounded-full bg-primary/40"></div>
+                                        Semanal
+                                    </div>
+</td>
+<td class="px-6 py-4 text-right rounded-r-xl">
+<button class="p-2 hover:bg-primary/10 rounded-lg text-primary transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button class="p-2 hover:bg-red-50 rounded-lg text-slate-300 hover:text-red-500 transition-colors">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="group hover:bg-primary/[0.02] transition-colors rounded-xl overflow-hidden">
+<td class="px-6 py-4 font-semibold text-slate-900 rounded-l-xl">
+<div class="flex items-center gap-3">
+<div class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center" data-alt="Shield icon for insurance services">
+<span class="material-symbols-outlined text-slate-400 text-sm">verified_user</span>
+</div>
+                                        Seguros Total
+                                    </div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">
+                                        Fixa
+                                    </span>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500">
+<div class="flex items-center gap-2">
+<div class="h-1.5 w-1.5 rounded-full bg-slate-300"></div>
+                                        Anual
+                                    </div>
+</td>
+<td class="px-6 py-4 text-right rounded-r-xl">
+<button class="p-2 hover:bg-primary/10 rounded-lg text-primary transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button class="p-2 hover:bg-red-50 rounded-lg text-slate-300 hover:text-red-500 transition-colors">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Footer Pagination -->
+<div class="border-t border-primary/5 p-6 flex items-center justify-between">
+<p class="text-sm text-slate-500 font-medium">Mostrando <span class="text-slate-900 font-bold">4</span> de <span class="text-slate-900 font-bold">128</span> fornecedores</p>
+<div class="flex gap-2">
+<button class="h-10 w-10 flex items-center justify-center rounded-xl border border-primary/10 text-slate-400 hover:bg-primary hover:text-white transition-all">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-xl bg-primary text-white font-bold shadow-sm">1</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-xl border border-primary/10 text-slate-500 hover:bg-primary hover:text-white transition-all font-bold">2</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-xl border border-primary/10 text-slate-500 hover:bg-primary hover:text-white transition-all font-bold">3</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-xl border border-primary/10 text-slate-400 hover:bg-primary hover:text-white transition-all">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Background Decoration -->
+<div class="fixed top-0 right-0 -z-10 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none translate-x-1/2 -translate-y-1/2"></div>
+<div class="fixed bottom-0 left-0 -z-10 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[100px] pointer-events-none -translate-x-1/2 translate-y-1/2"></div>
+</div>
+</body></html>

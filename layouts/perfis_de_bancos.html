@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+
+<html lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Finanças Pro - Perfis de Bancos</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#5b13ec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#161022",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .table-container {
+            scrollbar-width: thin;
+            scrollbar-color: #5b13ec transparent;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<!-- Navigation -->
+<header class="sticky top-0 z-50 glass border-b border-primary/10 px-6 lg:px-20 py-3 flex items-center justify-between">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3 text-primary">
+<div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-xl font-bold leading-tight tracking-tight">Finanças Pro</h2>
+</div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-semibold transition-colors" href="#">Dashboard</a>
+<a class="text-primary text-sm font-bold border-b-2 border-primary pb-1" href="#">Bancos</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-semibold transition-colors" href="#">Regras</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-semibold transition-colors" href="#">Relatórios</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+<input class="bg-slate-200/50 dark:bg-slate-800/50 border-none rounded-full py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary w-64" placeholder="Buscar perfil..." type="text"/>
+</div>
+<div class="size-10 rounded-full border-2 border-primary/20 p-0.5">
+<img alt="Avatar do usuário" class="rounded-full w-full h-full object-cover" data-alt="User profile photo avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgvMmes8-ewLHBkRWn4MS6z6u2a6EZ-cS4CULKLFsGrc9G9suKO2LXuDXcbcnpv6SzKaQOW8_C8G5X4hrHwHFRixmffjgvZM-5_iPFODQvWrm2zIrMWkh6YF80vp8ku7YUc5J5hKdRBcbBTw5zNLyzv_3AdzNoKlB1Ytj5TQmtbxVN3VxrlejZyR6Ns9jYy9W6WvPhzZa6kB6Nejg4x9CqV6Dt1NOnzvH8lpWl_6V2lfOYwZI4VA4Pv8U5vfImF70k69GLDTn0QfqU"/>
+</div>
+</div>
+</header>
+<main class="flex-1 max-w-7xl mx-auto w-full px-6 lg:px-10 py-8">
+<!-- Breadcrumbs -->
+<div class="flex items-center gap-2 mb-6 text-sm">
+<a class="text-slate-500 hover:text-primary transition-colors flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-lg">settings</span>
+                        Configurações
+                    </a>
+<span class="text-slate-300">/</span>
+<span class="text-slate-900 dark:text-slate-100 font-medium">Perfis de Bancos</span>
+</div>
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+<div class="max-w-2xl">
+<h1 class="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 mb-2">Perfis de Bancos</h1>
+<p class="text-slate-500 dark:text-slate-400 text-lg leading-relaxed">
+                            Configure a inteligência de extração. Defina identificadores de texto, limpezas automáticas e mapeamento de campos para cada instituição financeira.
+                        </p>
+</div>
+<button class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined">add</span>
+                        Novo Perfil
+                    </button>
+</div>
+<!-- Table Card -->
+<div class="glass rounded-2xl overflow-hidden border border-primary/10 shadow-xl shadow-slate-200/50 dark:shadow-none">
+<div class="overflow-x-auto table-container">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50/50 dark:bg-slate-900/50 border-b border-primary/10">
+<th class="px-6 py-5 text-sm font-bold text-slate-700 dark:text-slate-300">Instituição</th>
+<th class="px-6 py-5 text-sm font-bold text-slate-700 dark:text-slate-300">Identificadores</th>
+<th class="px-6 py-5 text-sm font-bold text-slate-700 dark:text-slate-300">Limpeza (Rules)</th>
+<th class="px-6 py-5 text-sm font-bold text-slate-700 dark:text-slate-300">Mapeamento</th>
+<th class="px-6 py-5 text-sm font-bold text-slate-700 dark:text-slate-300 text-right">Ações</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-primary/5">
+<!-- Row 1 -->
+<tr class="hover:bg-primary/5 transition-colors group">
+<td class="px-6 py-6">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400 font-bold">NB</div>
+<div>
+<p class="font-bold text-slate-900 dark:text-slate-100">Nubank</p>
+<p class="text-xs text-slate-500">Cartão &amp; Conta</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-6">
+<div class="flex flex-wrap gap-1.5">
+<span class="px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded uppercase tracking-wider">SISPAG</span>
+<span class="px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded uppercase tracking-wider">TRANSFERÊNCIA</span>
+</div>
+</td>
+<td class="px-6 py-6">
+<div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-primary text-base">auto_fix_high</span>
+<span>Trimming, Uppercase</span>
+</div>
+</td>
+<td class="px-6 py-6">
+<div class="flex -space-x-2">
+<div class="size-8 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-white dark:border-slate-900 flex items-center justify-center" title="Data"><span class="material-symbols-outlined text-xs">calendar_today</span></div>
+<div class="size-8 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-white dark:border-slate-900 flex items-center justify-center" title="Valor"><span class="material-symbols-outlined text-xs">attach_money</span></div>
+<div class="size-8 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-white dark:border-slate-900 flex items-center justify-center" title="Descrição"><span class="material-symbols-outlined text-xs">description</span></div>
+</div>
+</td>
+<td class="px-6 py-6 text-right">
+<button class="text-slate-400 hover:text-primary p-2 transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button class="text-slate-400 hover:text-red-500 p-2 transition-colors">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-primary/5 transition-colors group">
+<td class="px-6 py-6">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 dark:text-orange-400 font-bold">BI</div>
+<div>
+<p class="font-bold text-slate-900 dark:text-slate-100">Banco Inter</p>
+<p class="text-xs text-slate-500">Investimentos</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-6">
+<div class="flex flex-wrap gap-1.5">
+<span class="px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded uppercase tracking-wider">PIX</span>
+<span class="px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded uppercase tracking-wider">BOLETO</span>
+</div>
+</td>
+<td class="px-6 py-6">
+<div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 font-mono">
+<span class="material-symbols-outlined text-primary text-base">code</span>
+<span>Regex: /\s+/g</span>
+</div>
+</td>
+<td class="px-6 py-6">
+<div class="flex -space-x-2">
+<div class="size-8 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-white dark:border-slate-900 flex items-center justify-center" title="Categoria"><span class="material-symbols-outlined text-xs">category</span></div>
+<div class="size-8 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-white dark:border-slate-900 flex items-center justify-center" title="CPF"><span class="material-symbols-outlined text-xs">badge</span></div>
+</div>
+</td>
+<td class="px-6 py-6 text-right">
+<button class="text-slate-400 hover:text-primary p-2 transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button class="text-slate-400 hover:text-red-500 p-2 transition-colors">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-primary/5 transition-colors group">
+<td class="px-6 py-6">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold">IT</div>
+<div>
+<p class="font-bold text-slate-900 dark:text-slate-100">Itaú Card</p>
+<p class="text-xs text-slate-500">Corporate Fleet</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-6">
+<div class="flex flex-wrap gap-1.5">
+<span class="px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded uppercase tracking-wider">COMPRA</span>
+<span class="px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded uppercase tracking-wider">ESTORNO</span>
+</div>
+</td>
+<td class="px-6 py-6">
+<div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-primary text-base">cleaning_services</span>
+<span>Special Chars Removal</span>
+</div>
+</td>
+<td class="px-6 py-6">
+<div class="flex -space-x-2">
+<div class="size-8 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-white dark:border-slate-900 flex items-center justify-center" title="Cartão"><span class="material-symbols-outlined text-xs">credit_card</span></div>
+<div class="size-8 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-white dark:border-slate-900 flex items-center justify-center" title="Estabelecimento"><span class="material-symbols-outlined text-xs">store</span></div>
+</div>
+</td>
+<td class="px-6 py-6 text-right">
+<button class="text-slate-400 hover:text-primary p-2 transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button class="text-slate-400 hover:text-red-500 p-2 transition-colors">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination / Status Bar -->
+<div class="px-6 py-4 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-slate-500">
+<p>Mostrando <span class="font-bold text-slate-700 dark:text-slate-300">3</span> perfis ativos</p>
+<div class="flex items-center gap-2">
+<button class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded transition-colors disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<span class="px-3 py-1 bg-primary text-white rounded-md font-bold">1</span>
+<button class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Documentation Quick Card -->
+<div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="glass p-6 rounded-2xl border border-primary/10">
+<div class="size-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4">
+<span class="material-symbols-outlined">description</span>
+</div>
+<h3 class="font-bold text-slate-900 dark:text-slate-100 mb-2">Identificadores</h3>
+<p class="text-sm text-slate-500">Termos encontrados no arquivo para rotear o processamento automaticamente.</p>
+</div>
+<div class="glass p-6 rounded-2xl border border-primary/10">
+<div class="size-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4">
+<span class="material-symbols-outlined">filter_list</span>
+</div>
+<h3 class="font-bold text-slate-900 dark:text-slate-100 mb-2">Limpeza</h3>
+<p class="text-sm text-slate-500">Sequência de transformações (Trimming, Regex, Replace) aplicadas ao texto bruto.</p>
+</div>
+<div class="glass p-6 rounded-2xl border border-primary/10">
+<div class="size-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4">
+<span class="material-symbols-outlined">schema</span>
+</div>
+<h3 class="font-bold text-slate-900 dark:text-slate-100 mb-2">Extração</h3>
+<p class="text-sm text-slate-500">Mapeamento dinâmico dos tokens de texto para os campos do sistema financeiro.</p>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="mt-auto px-10 py-8 border-t border-primary/5">
+<div class="flex flex-col md:flex-row justify-between items-center gap-4 text-slate-400 text-xs">
+<p>© 2024 Finanças Pro Enterprise Edition</p>
+<div class="flex gap-6">
+<a class="hover:text-primary" href="#">Termos de Uso</a>
+<a class="hover:text-primary" href="#">API Documentation</a>
+<a class="hover:text-primary" href="#">Suporte Técnico</a>
+</div>
+</div>
+</footer>
+</div>
+</div>
+</body></html>

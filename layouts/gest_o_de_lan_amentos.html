@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+
+<html lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Finanças Pro - Gestão de Lançamentos</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#5b13ec",
+                "background-light": "#f6f6f8",
+                "background-dark": "#161022",
+              },
+              fontFamily: {
+                "display": ["Inter"]
+              },
+              borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+            },
+          },
+        }
+    </script>
+<style>
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md px-6 py-3 sticky top-0 z-50">
+<div class="flex items-center gap-4">
+<div class="bg-primary p-2 rounded-lg text-white">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight">Finanças Pro</h2>
+</div>
+<div class="flex flex-1 justify-end gap-4 items-center">
+<nav class="hidden md:flex items-center gap-6 mr-6">
+<a class="text-primary font-semibold text-sm flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span> Dashboard
+                        </a>
+<a class="text-slate-500 hover:text-primary transition-colors font-medium text-sm flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-[20px]">receipt_long</span> Lançamentos
+                        </a>
+<a class="text-slate-500 hover:text-primary transition-colors font-medium text-sm flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-[20px]">bar_chart</span> Relatórios
+                        </a>
+</nav>
+<div class="flex gap-2">
+<button class="flex items-center justify-center rounded-xl size-10 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="flex items-center justify-center rounded-xl size-10 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<div class="bg-slate-200 dark:bg-slate-700 size-10 rounded-full border-2 border-primary/20 overflow-hidden">
+<img alt="Avatar" class="w-full h-full object-cover" data-alt="User profile professional portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRrPa64DZ5tuTuHmoxRwQiursh8-bnB3iwB3Pqiw_CuIwXzZBKLiIf_gL0fNguui_lsOcCUB4Nvn22PmPbMj9yWxp8gPggWl5A8RXGP3-vqBfNY2S1giDRkqlK-ocjoszcdtbAuu7f5xHmiIW2yr0TwyL-fYXmyhK-6GjlvWyjwz5CZxnAB2avLs8Lo0nmsb7EVfcVDWuPw7iE5x3Z9Z_bELXj-irOkCSTPo0CV-MlroWRY668fnrO4b9axiC5KkUXcFHugeH-uG65"/>
+</div>
+</div>
+</header>
+<main class="flex-1 max-w-7xl mx-auto w-full px-4 py-8">
+<div class="flex flex-wrap items-end justify-between gap-4 mb-8">
+<div class="flex flex-col gap-1">
+<h1 class="text-slate-900 dark:text-slate-100 text-3xl font-extrabold tracking-tight">Gestão de Lançamentos</h1>
+<p class="text-slate-500 dark:text-slate-400">Controle suas entradas e saídas com facilidade</p>
+</div>
+<button class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-primary/20 transition-all transform hover:scale-[1.02] active:scale-95">
+<span class="material-symbols-outlined">add</span>
+                        Novo lançamento
+                    </button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+<div class="glass dark:bg-slate-800/50 p-6 rounded-2xl shadow-sm border border-white/50 dark:border-slate-700/50">
+<div class="flex justify-between items-start mb-4">
+<span class="p-2 bg-green-100 dark:bg-green-900/30 text-green-600 rounded-lg">
+<span class="material-symbols-outlined">trending_up</span>
+</span>
+<span class="text-green-500 text-sm font-bold flex items-center">+12.5%</span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Saldo Total</p>
+<h3 class="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">R$ 45.280,00</h3>
+</div>
+<div class="glass dark:bg-slate-800/50 p-6 rounded-2xl shadow-sm border border-white/50 dark:border-slate-700/50">
+<div class="flex justify-between items-start mb-4">
+<span class="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-lg">
+<span class="material-symbols-outlined">payments</span>
+</span>
+<span class="text-slate-500 text-sm font-medium">Este mês</span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Entradas</p>
+<h3 class="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">R$ 12.450,00</h3>
+</div>
+<div class="glass dark:bg-slate-800/50 p-6 rounded-2xl shadow-sm border border-white/50 dark:border-slate-700/50">
+<div class="flex justify-between items-start mb-4">
+<span class="p-2 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-lg">
+<span class="material-symbols-outlined">shopping_cart</span>
+</span>
+<span class="text-red-500 text-sm font-bold flex items-center">-5.2%</span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Saídas</p>
+<h3 class="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">R$ 4.820,00</h3>
+</div>
+</div>
+<div class="glass dark:bg-slate-800/50 rounded-2xl border border-white/50 dark:border-slate-700/50 shadow-xl overflow-hidden">
+<div class="p-6 border-b border-slate-200 dark:border-slate-700 space-y-4 md:space-y-0 md:flex items-center justify-between gap-4">
+<div class="relative flex-1 max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full pl-10 pr-4 py-2.5 bg-slate-100 dark:bg-slate-900 border-none rounded-xl focus:ring-2 focus:ring-primary/50 text-sm" placeholder="Pesquisar descrição, fornecedor ou banco..." type="text"/>
+</div>
+<div class="flex items-center gap-3">
+<select class="bg-slate-100 dark:bg-slate-900 border-none rounded-xl text-sm py-2.5 px-4 focus:ring-2 focus:ring-primary/50">
+<option>Todos os tipos</option>
+<option>Entrada</option>
+<option>Saída</option>
+</select>
+<select class="bg-slate-100 dark:bg-slate-900 border-none rounded-xl text-sm py-2.5 px-4 focus:ring-2 focus:ring-primary/50">
+<option>Categorias</option>
+<option>Aluguel</option>
+<option>Alimentação</option>
+<option>Salário</option>
+</select>
+<button class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">
+<span class="material-symbols-outlined text-sm">filter_list</span>
+<span class="text-sm font-medium">Mais Filtros</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-slate-50/50 dark:bg-slate-900/50">
+<tr>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Data</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Descrição</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Fornecedor</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Banco</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Categoria</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Tipo</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Valor</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Ações</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+<tr class="hover:bg-primary/5 transition-colors group">
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">12/05/2024</td>
+<td class="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-slate-100">Consultoria Técnica Mensal</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">Tech Solutions LTDA</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-xs font-medium text-slate-600 dark:text-slate-400">
+<span class="size-1.5 rounded-full bg-blue-500"></span> Nubank
+                                        </span>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">Serviços</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold">Entrada</span>
+</td>
+<td class="px-6 py-4 text-sm font-bold text-green-600">R$ 8.500,00</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-slate-400 hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 text-slate-400 hover:text-red-500 transition-colors"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors group">
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">11/05/2024</td>
+<td class="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-slate-100">Aluguel Escritório</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">Imob Center S/A</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-xs font-medium text-slate-600 dark:text-slate-400">
+<span class="size-1.5 rounded-full bg-orange-500"></span> Itaú
+                                        </span>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">Infraestrutura</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-bold">Saída</span>
+</td>
+<td class="px-6 py-4 text-sm font-bold text-red-600">R$ 3.200,00</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-slate-400 hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 text-slate-400 hover:text-red-500 transition-colors"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors group">
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">10/05/2024</td>
+<td class="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-slate-100">Assinatura Cloud Service</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">AWS Amazon</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-xs font-medium text-slate-600 dark:text-slate-400">
+<span class="size-1.5 rounded-full bg-purple-500"></span> Inter
+                                        </span>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">TI &amp; Software</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-bold">Saída</span>
+</td>
+<td class="px-6 py-4 text-sm font-bold text-red-600">R$ 450,00</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-slate-400 hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 text-slate-400 hover:text-red-500 transition-colors"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors group">
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">08/05/2024</td>
+<td class="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-slate-100">Recebimento Projeto UX</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">Design World Co.</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-xs font-medium text-slate-600 dark:text-slate-400">
+<span class="size-1.5 rounded-full bg-blue-500"></span> Nubank
+                                        </span>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">Design</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold">Entrada</span>
+</td>
+<td class="px-6 py-4 text-sm font-bold text-green-600">R$ 15.000,00</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-slate-400 hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 text-slate-400 hover:text-red-500 transition-colors"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 bg-slate-50/50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
+<p class="text-sm text-slate-500">Exibindo 4 de 256 lançamentos</p>
+<div class="flex gap-2">
+<button class="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium hover:bg-white dark:hover:bg-slate-800 disabled:opacity-50" disabled="">Anterior</button>
+<button class="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium hover:bg-white dark:hover:bg-slate-800">Próxima</button>
+</div>
+</div>
+</div>
+</main>
+<footer class="mt-auto px-6 py-8 border-t border-slate-200 dark:border-slate-800 text-center">
+<p class="text-slate-400 text-sm">© 2024 Finanças Pro. Gestão financeira inteligente.</p>
+</footer>
+</div>
+</div>
+</body></html>
