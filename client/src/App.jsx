@@ -13,6 +13,8 @@ import axios from 'axios';
 import { supabase } from './supabaseClient';
 import Auth from './Auth';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
+
 const DEFAULT_CATEGORIES = [
   "Investimentos", "Alimentação", "Transporte", "Saúde", "Lazer",
   "Educação", "Moradia", "Seguros", "Outros"
@@ -158,10 +160,10 @@ const App = () => {
 
   const fetchWaStatus = async () => {
     try {
-      const resp = await axios.get('http://localhost:3002/whatsapp-status');
+      const resp = await axios.get(`${API_URL}/whatsapp-status`);
       setWaStatus(resp.data.status);
       if (resp.data.status === 'qr_ready') {
-        const qrResp = await axios.get('http://localhost:3002/whatsapp-qr');
+        const qrResp = await axios.get(`${API_URL}/whatsapp-qr`);
         setWaQr(qrResp.data.qr);
       } else {
         setWaQr(null);
@@ -204,7 +206,7 @@ const App = () => {
 
       const newEntry = { ...manualFormData, 'Valor (R$)': valor };
       
-      await axios.post('http://localhost:3002/save-transactions', {
+      await axios.post(`${API_URL}/save-transactions`, {
         transactions: [newEntry]
       });
 
@@ -241,7 +243,7 @@ const App = () => {
     setLoading(true);
     try {
       const { startDate, endDate } = dateFilters;
-      const resp = await axios.get('http://localhost:3002/dashboard-stats', {
+      const resp = await axios.get(`${API_URL}/dashboard-stats`, {
         params: { startDate, endDate }
       });
       setStats(resp.data);
@@ -256,7 +258,7 @@ const App = () => {
 
   const fetchAllTransactions = async () => {
     try {
-      const resp = await axios.get('http://localhost:3002/transactions');
+      const resp = await axios.get(`${API_URL}/transactions`);
       setAllTransactions(resp.data);
       return resp.data;
     } catch (error) {
@@ -267,7 +269,7 @@ const App = () => {
 
   const fetchSuppliers = async () => {
     try {
-      const resp = await axios.get('http://localhost:3002/suppliers');
+      const resp = await axios.get(`${API_URL}/suppliers`);
       setSuppliers(resp.data);
     } catch (error) {
       console.error("Erro ao carregar fornecedores:", error);
@@ -276,7 +278,7 @@ const App = () => {
 
   const fetchBankProfiles = async () => {
     try {
-      const resp = await axios.get('http://localhost:3002/bank-profiles');
+      const resp = await axios.get(`${API_URL}/bank-profiles`);
       setBankProfiles(resp.data);
     } catch (error) {
       console.error("Erro ao carregar perfis de banco:", error);
@@ -285,7 +287,7 @@ const App = () => {
 
   const fetchSettings = async () => {
     try {
-      const resp = await axios.get('http://localhost:3002/settings');
+      const resp = await axios.get(`${API_URL}/settings`);
       const authNum = resp.data.find(s => s.key === 'whatsapp_authorized_number')?.value;
       const gemKey = resp.data.find(s => s.key === 'gemini_api_key')?.value;
       const sysPrompt = resp.data.find(s => s.key === 'gemini_system_prompt')?.value;
@@ -301,7 +303,7 @@ const App = () => {
 
   const fetchAiLogs = async () => {
     try {
-      const res = await axios.get('http://localhost:3002/ai-logs');
+      const res = await axios.get(`${API_URL}/ai-logs`);
       setAiLogs(res.data.logs);
     } catch (err) {
       console.error('Erro ao buscar logs da IA', err);
@@ -311,7 +313,7 @@ const App = () => {
   const clearAiLogs = async () => {
     if (!window.confirm("Limpar logs?")) return;
     try {
-      await axios.delete('http://localhost:3002/ai-logs');
+      await axios.delete(`${API_URL}/ai-logs`);
       setAiLogs('Logs limpos.');
     } catch (err) {
       console.error('Erro ao limpar logs', err);
@@ -320,7 +322,7 @@ const App = () => {
 
   const saveGeminiSystemPrompt = async () => {
     try {
-      await axios.post('http://localhost:3002/settings', { key: 'gemini_system_prompt', value: geminiSystemPrompt });
+      await axios.post(`${API_URL}/settings`, { key: 'gemini_system_prompt', value: geminiSystemPrompt });
       showToast('Prompt do sistema atualizado!', 'success');
     } catch (err) {
       showToast('Erro ao salvar prompt', 'error');
@@ -329,7 +331,7 @@ const App = () => {
 
   const saveAuthorizedNumber = async () => {
     try {
-      await axios.post('http://localhost:3002/settings', { key: 'whatsapp_authorized_number', value: authorizedNumber });
+      await axios.post(`${API_URL}/settings`, { key: 'whatsapp_authorized_number', value: authorizedNumber });
       showToast('Segurança do WhatsApp atualizada!', 'success');
     } catch (err) {
       showToast('Erro ao salvar configuração', 'error');
@@ -340,7 +342,7 @@ const App = () => {
     const newValue = e.target.checked;
     setProcessOutgoingMessages(newValue);
     try {
-      await axios.post('http://localhost:3002/settings', { key: 'process_outgoing_messages', value: newValue.toString() });
+      await axios.post(`${API_URL}/settings`, { key: 'process_outgoing_messages', value: newValue.toString() });
       showToast(newValue ? 'Processamento a terceiros ativado!' : 'Processamento a terceiros desativado!');
     } catch (err) {
       showToast('Erro ao atualizar configuração', 'error');
@@ -350,7 +352,7 @@ const App = () => {
 
   const saveGeminiApiKey = async () => {
     try {
-      await axios.post('http://localhost:3002/settings', { key: 'gemini_api_key', value: geminiApiKey });
+      await axios.post(`${API_URL}/settings`, { key: 'gemini_api_key', value: geminiApiKey });
       showToast('🤖 Gemini IA ativada com sucesso!', 'success');
     } catch (err) {
       showToast('Erro ao salvar chave Gemini', 'error');
@@ -360,7 +362,7 @@ const App = () => {
   const handleLogoutWhatsApp = async () => {
     if (!window.confirm("Certeza que deseja desconectar o WhatsApp?")) return;
     try {
-      await axios.post('http://localhost:3002/whatsapp-logout');
+      await axios.post(`${API_URL}/whatsapp-logout`);
       showToast('WhatsApp desconectado!');
       setWaStatus('disconnected');
       setWaQr(null);
@@ -447,7 +449,7 @@ const App = () => {
     setStatus(`Processando ${files.length} imagem(ns)...`);
 
     try {
-      const resp = await axios.post('http://localhost:3002/process-image', formData);
+      const resp = await axios.post(`${API_URL}/process-image`, formData);
       setPendingTransactions(resp.data.data);
       showToast(`Encontradas ${resp.data.data.length} transações.`);
       setIsUploading(false);
@@ -469,7 +471,7 @@ const App = () => {
     setStatus('Salvando no banco de dados...');
 
     try {
-      await axios.post('http://localhost:3002/save-transactions', {
+      await axios.post(`${API_URL}/save-transactions`, {
         transactions: pendingTransactions
       });
       showToast('Banco de dados atualizado com sucesso!');
@@ -490,7 +492,7 @@ const App = () => {
   const handleDeleteTransaction = async (id) => {
     if (!window.confirm("Certeza que deseja excluir este lançamento?")) return;
     try {
-      await axios.delete(`http://localhost:3002/transactions/${id}`);
+      await axios.delete(`${API_URL}/transactions/${id}`);
       showToast('Transação excluída com sucesso!');
       fetchStats();
       fetchAllTransactions();
@@ -508,7 +510,7 @@ const App = () => {
     if (!editingTransaction) return;
     setLoading(true);
     try {
-      await axios.put(`http://localhost:3002/transactions/${editingTransaction.id}`, editingTransaction);
+      await axios.put(`${API_URL}/transactions/${editingTransaction.id}`, editingTransaction);
       showToast('Transação atualizada com sucesso!');
       setEditingTransaction(null);
       fetchStats();
@@ -527,10 +529,10 @@ const App = () => {
       setLoading(true);
       try {
           if (editingSupplier) {
-              await axios.put(`http://localhost:3002/suppliers/${editingSupplier.id}`, newSupplier);
+              await axios.put(`${API_URL}/suppliers/${editingSupplier.id}`, newSupplier);
               showToast("Fornecedor atualizado!");
           } else {
-              await axios.post('http://localhost:3002/suppliers', newSupplier);
+              await axios.post(`${API_URL}/suppliers`, newSupplier);
               showToast("Fornecedor cadastrado!");
           }
           setNewSupplier({ nome: '', categoria: 'Outros' });
@@ -546,7 +548,7 @@ const App = () => {
   const handleDeleteSupplier = async (id) => {
       if (!window.confirm("Excluir este fornecedor?")) return;
       try {
-          await axios.delete(`http://localhost:3002/suppliers/${id}`);
+          await axios.delete(`${API_URL}/suppliers/${id}`);
           showToast("Fornecedor excluído!");
           fetchSuppliers();
       } catch (error) {
@@ -1470,10 +1472,19 @@ const App = () => {
               <button className="btn-primary" onClick={async () => {
                 if (!newBankProfile.nome || !newBankProfile.identificador) return showToast('Preencha os campos obrigatórios', 'error');
                 try {
-                  if (editingBankProfile) { await axios.put(`http://localhost:3002/bank-profiles/${editingBankProfile.id}`, newBankProfile); showToast('Perfil atualizado!'); }
-                  else { await axios.post('http://localhost:3002/bank-profiles', newBankProfile); showToast('Perfil criado!'); }
-                  setNewBankProfile({ nome: '', identificador: '', palavras_ignorar: '', cartao_final: '' }); setEditingBankProfile(null); fetchBankProfiles();
-                } catch (err) { showToast('Erro ao salvar', 'error'); }
+                  if (editingBankProfile) { 
+                    await axios.put(`${API_URL}/bank-profiles/${editingBankProfile.id}`, newBankProfile); 
+                    showToast('Perfil atualizado!'); 
+                  } else { 
+                    await axios.post(`${API_URL}/bank-profiles`, newBankProfile); 
+                    showToast('Perfil criado!'); 
+                  }
+                  setNewBankProfile({ nome: '', identificador: '', palavras_ignorar: '', cartao_final: '' }); 
+                  setEditingBankProfile(null); 
+                  fetchBankProfiles();
+                } catch (err) { 
+                  showToast('Erro ao salvar', 'error'); 
+                }
               }}><Plus size={16} /> {editingBankProfile ? 'Salvar' : 'Adicionar'}</button>
               {editingBankProfile && <button className="btn-secondary" onClick={() => { setEditingBankProfile(null); setNewBankProfile({ nome: '', identificador: '', palavras_ignorar: '', cartao_final: '' }); }}><X size={15} /> Cancelar</button>}
             </div>
@@ -1497,7 +1508,7 @@ const App = () => {
                       <td>
                         <div style={{ display: 'flex', gap: '0.25rem', justifyContent: 'center' }}>
                           <button className="action-btn primary" title="Editar" onClick={() => { setEditingBankProfile(bp); setNewBankProfile({ ...bp }); }}><Tag size={15} /></button>
-                          <button className="action-btn danger" title="Excluir" onClick={async () => { if (window.confirm('Excluir perfil?')) { await axios.delete(`http://localhost:3002/bank-profiles/${bp.id}`); fetchBankProfiles(); } }}><Trash2 size={15} /></button>
+                          <button className="action-btn danger" title="Excluir" onClick={async () => { if (window.confirm('Excluir perfil?')) { await axios.delete(`${API_URL}/bank-profiles/${bp.id}`); fetchBankProfiles(); } }}><Trash2 size={15} /></button>
                         </div>
                       </td>
                     </tr>
