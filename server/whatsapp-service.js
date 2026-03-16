@@ -35,9 +35,22 @@ async function connectToWhatsApp() {
         }
 
         const { state, saveCreds } = await useMultiFileAuthState(authPath);
-        const { version, isLatest } = await fetchLatestBaileysVersion();
+        // Busca versão do WA com timeout e fallback para versão fixa
+        let version, isLatest;
+        try {
+            const versionResult = await Promise.race([
+                fetchLatestBaileysVersion(),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout 10s')), 10000))
+            ]);
+            version = versionResult.version;
+            isLatest = versionResult.isLatest;
+        } catch (e) {
+            console.warn(`⚠️ [WHATSAPP] Não foi possível buscar versão online (${e.message}). Usando versão fixa.`);
+            version = [2, 3000, 1015901307];
+            isLatest = false;
+        }
 
-        console.log(`--- [WHATSAPP] Versão: ${version} ---`);
+        console.log(`--- [WHATSAPP] Versão: ${version}, isLatest: ${isLatest} ---`);
 
         sock = makeWASocket({
             version,
