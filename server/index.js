@@ -30,8 +30,10 @@ app.set('trust proxy', 1);
 app.get('/', (req, res) => res.send('🚀 Backend ONLINE e estável! V3'));
 app.get('/health', (req, res) => res.json({ status: 'ok', uptime: process.uptime(), memory: process.memoryUsage().rss }));
 
-// 4. Bind da porta IMEDIATO
-app.listen(PORT, () => console.log(`🚀 [SERVIDOR] Porta ${PORT} aberta.`));
+// 4. Bind da porta IMEDIATO (Forçando 0.0.0.0 para Cloud)
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 [SERVIDOR] Porta ${PORT} aberta em 0.0.0.0.`);
+});
 
 // 5. Vigilante de Memória
 setInterval(() => {
@@ -75,13 +77,21 @@ app.get('/whatsapp-start', (req, res) => {
 
 // Endpoint WhatsApp QR
 app.get('/whatsapp-qr', async (req, res) => {
+    console.log('🖼️ [QR] Requisição de imagem de QR Code recebida.');
     const qr = safeWa.getQrCode();
-    if (!qr) return res.status(404).json({ error: 'QR Code não disponível.' });
+    
+    if (!qr) {
+        console.log('⚠️ [QR] Nenhum QR Code disponível no serviço.');
+        return res.status(404).json({ error: 'QR Code não disponível.' });
+    }
 
     try {
+        console.log('🎨 [QR] Convertendo string para DataURL...');
         const qrImage = await QRCode.toDataURL(qr);
+        console.log('✅ [QR] Imagem gerada com sucesso.');
         res.json({ qr: qrImage });
     } catch (err) {
+        console.error('❌ [QR] Erro ao gerar imagem:', err.message);
         res.status(500).json({ error: 'Erro ao gerar imagem' });
     }
 });
@@ -89,6 +99,7 @@ app.get('/whatsapp-qr', async (req, res) => {
 // Endpoint WhatsApp Status
 app.get('/whatsapp-status', (req, res) => {
     const status = safeWa.getStatus();
+    console.log(`📊 [STATUS] Enviando para o Frontend: ${status}`);
     res.json({ status });
 });
 

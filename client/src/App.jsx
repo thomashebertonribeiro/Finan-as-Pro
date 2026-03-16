@@ -1641,10 +1641,19 @@ const App = () => {
                       Desconectar WhatsApp
                     </button>
                   </div>
-                ) : waQr ? (
+                ) : (waStatus === 'qr_ready' || waQr) ? (
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-                    <img src={waQr} style={{ width: '180px', borderRadius: '0.5rem', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }} alt="QR Code" />
-                    <p style={{ fontSize: '0.8rem', fontWeight: '600' }}>Escaneie para conectar</p>
+                    {waQr ? (
+                      <>
+                        <img src={waQr} style={{ width: '180px', borderRadius: '0.5rem', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }} alt="QR Code" />
+                        <p style={{ fontSize: '0.8rem', fontWeight: '600' }}>Escaneie para conectar</p>
+                      </>
+                    ) : (
+                      <>
+                        <Loader2 className="animate-spin" size={32} />
+                        <p style={{ fontSize: '0.8rem' }}>Gerando QR Code...</p>
+                      </>
+                    )}
                   </div>
                 ) : waStatus === 'connecting' ? (
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', color: 'var(--text-muted)' }}>

@@ -48,9 +48,9 @@ async function connectToWhatsApp() {
             const { connection, lastDisconnect, qr } = update;
 
             if (qr) {
+                console.log(`✨ [WHATSAPP] Novo QR Code recebido! (Tamanho: ${qr.length})`);
                 qrCode = qr;
                 connectionStatus = 'qr_ready';
-                console.log('✅ [WHATSAPP] QR Code gerado.');
             }
 
             if (connection === 'close') {
