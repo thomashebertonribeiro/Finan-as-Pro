@@ -1,63 +1,92 @@
-require('dotenv').config();
-const express = require('express');
-const multer = require('multer');
-const cors = require('cors');
-const fs = require('fs');
-const path = require('path');
-// const Tesseract = require('tesseract.js'); // Carregado sob demanda para economizar RAM
-const { GoogleSpreadsheet } = require('google-spreadsheet');
-const { JWT } = require('google-auth-library');
-
-// Captura de Erros Globais para evitar crash silencioso no Railway
+// 1. Handlers de Erros Globais DE IMEDIATO
 process.on('uncaughtException', (err) => {
     console.error('💥 [ALERTA] UNCAUGHT EXCEPTION:', err.message);
     console.error(err.stack);
 });
-
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', (reason) => {
     console.error('💥 [ALERTA] UNHANDLED REJECTION:', reason);
 });
 
-// Monitor de Memória
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+
+const app = express();
+const PORT = process.env.PORT || 3002;
+
+// 2. Configuração básica de CORS e JSON
+app.use(cors({ origin: '*' }));
+app.use(express.json());
+app.set('trust proxy', 1);
+
+// 3. Health Check PRIORITÁRIO (para o Railway validar o container)
+app.get('/', (req, res) => res.send('🚀 Backend ONLINE e estável!'));
+app.get('/health', (req, res) => res.json({ status: 'ok', uptime: process.uptime() }));
+
+// 4. Bind da porta o mais rápido possível
+app.listen(PORT, () => {
+    console.log(`🚀 [SERVIDOR] Porta ${PORT} aberta com sucesso.`);
+    console.log(`🧠 [RAM] RSS: ${Math.round(process.memoryUsage().rss / 1024 / 1024)} MB`);
+});
+
+// 5. Monitor de Memória
 setInterval(() => {
     const used = process.memoryUsage();
     console.log(`🧠 [RAM] RSS: ${Math.round(used.rss / 1024 / 1024 * 100) / 100} MB | Heap: ${Math.round(used.heapUsed / 1024 / 1024 * 100) / 100} MB`);
-}, 30000);
+}, 60000);
 
-const app = express();
+// 6. Imports locais cercados por try-catch
+let initDatabase, getRows, saveTransactionsToDb, updateTransactionInDb, deleteTransactionFromDb;
+let getSuppliers, addSupplier, updateSupplier, deleteSupplierFromDb;
+let getSettings, updateSetting;
+let getBankProfiles, addBankProfile, updateBankProfile, deleteBankProfile;
+let parseFinancialData, processImageWithGemini, waService;
+let multer, fs, path, GoogleSpreadsheet, JWT;
 
-// Configuração robusta de CORS
-app.use(cors({
-    origin: '*', // Permitir tudo temporariamente para debugar, ou especifique a URL do Vercel
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
+try {
+    multer = require('multer');
+    fs = require('fs');
+    path = require('path');
+    const db = require('./database');
+    initDatabase = db.initDatabase;
+    getRows = db.getRows;
+    saveTransactionsToDb = db.saveTransactionsToDb;
+    updateTransactionInDb = db.updateTransactionInDb;
+    deleteTransactionFromDb = db.deleteTransactionFromDb;
+    getSuppliers = db.getSuppliers;
+    addSupplier = db.addSupplier;
+    updateSupplier = db.updateSupplier;
+    deleteSupplierFromDb = db.deleteSupplierFromDb;
+    getSettings = db.getSettings;
+    updateSetting = db.updateSetting;
+    getBankProfiles = db.getBankProfiles;
+    addBankProfile = db.addBankProfile;
+    updateBankProfile = db.updateBankProfile;
+    deleteBankProfile = db.deleteBankProfile;
 
-app.set('trust proxy', 1); // Necessário para Railway/Proxies
-app.use(express.json());
+    const utils = require('./utils');
+    parseFinancialData = utils.parseFinancialData;
 
-// Middleware de Log de Requisições
-app.use((req, res, next) => {
-    console.log(`🌐 [REQ] ${req.method} ${req.url} - ${new Date().toLocaleTimeString()} - Origin: ${req.get('origin')}`);
-    next();
-});
+    const gemini = require('./gemini-service');
+    processImageWithGemini = gemini.processImageWithGemini;
 
-// Rota Raiz / Health Check
-app.get('/', (req, res) => {
-    console.log('✅ [HEALTH] Requisição recebida na raiz.');
-    res.send('🚀 Backend Finanças Pro funcionando!');
-});
+    waService = require('./whatsapp-service');
+    
+    const gSheets = require('google-spreadsheet');
+    GoogleSpreadsheet = gSheets.GoogleSpreadsheet;
+    const gAuth = require('google-auth-library');
+    JWT = gAuth.JWT;
 
-const upload = multer({ dest: 'uploads/' });
-const { 
-    initDatabase, getRows, saveTransactionsToDb, updateTransactionInDb, deleteTransactionFromDb,
-    getSuppliers, addSupplier, updateSupplier, deleteSupplierFromDb,
-    getSettings, updateSetting,
-    getBankProfiles, addBankProfile, updateBankProfile, deleteBankProfile
-} = require('./database');
-const { parseFinancialData } = require('./utils');
-const { processImageWithGemini } = require('./gemini-service');
-const waService = require('./whatsapp-service');
+    console.log('✅ [BOOT] Módulos internos carregados com sucesso.');
+    
+    // Inicia banco após o boot
+    initDatabase().catch(e => console.error('❌ [DATABASE] Erro na inicialização:', e.message));
+} catch (err) {
+    console.error('❌ [CRITICAL] Falha ao carregar módulos internos no require:', err.message);
+    console.error(err.stack);
+}
+
+const upload = multer ? multer({ dest: 'uploads/' }) : { array: () => (req, res, next) => next() };
 const QRCode = require('qrcode');
 
 // Endpoint para iniciar WhatsApp MANUALMENTE (evita queda no boot)
