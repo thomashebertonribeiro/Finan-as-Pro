@@ -473,19 +473,5 @@ app.delete('/bank-profiles/:id', async (req, res) => {
         res.status(500).json({ error: 'Erro ao excluir perfil', details: error.message });
     }
 });
-
-const PORT = process.env.PORT || 3002;
-app.listen(PORT, () => {
-    console.log(`🚀 [SERVIDOR] Online na porta ${PORT}`);
-    console.log(`📡 [DEBUG] Teste a URL direta: https://finan-as-pro-production.up.railway.app/`);
-    
-    // Inicia serviços pesados após o servidor estar online
-    console.log('--- [INÍCIO] Carregando serviços de segundo plano... ---');
-    
-    initDatabase()
-        .then(() => {
-            console.log('✅ [DATABASE] Banco iniciado com sucesso.');
-            console.log('💡 [SISTEMA] WhatsApp aguardando ativação manual via /whatsapp-start');
-        })
-        .catch(err => console.error("❌ [DATABASE] Falha ao iniciar:", err.message));
 });
+
