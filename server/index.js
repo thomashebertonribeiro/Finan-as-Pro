@@ -18,6 +18,12 @@ process.on('unhandledRejection', (reason, promise) => {
     console.error('💥 [ALERTA] UNHANDLED REJECTION:', reason);
 });
 
+// Monitor de Memória
+setInterval(() => {
+    const used = process.memoryUsage();
+    console.log(`🧠 [RAM] RSS: ${Math.round(used.rss / 1024 / 1024 * 100) / 100} MB | Heap: ${Math.round(used.heapUsed / 1024 / 1024 * 100) / 100} MB`);
+}, 30000);
+
 const app = express();
 
 // Configuração robusta de CORS
@@ -442,10 +448,15 @@ app.listen(PORT, () => {
     console.log('--- [INÍCIO] Carregando serviços de segundo plano... ---');
     
     initDatabase()
-        .then(() => console.log('✅ [DATABASE] Banco iniciado com sucesso.'))
+        .then(() => {
+            console.log('✅ [DATABASE] Banco iniciado com sucesso.');
+            // Espera mais 5 segundos para o WhatsApp não brigar por CPU no início
+            console.log('⌛ [WHATSAPP] Aguardando 5s para iniciar conexão...');
+            setTimeout(() => {
+                waService.connectToWhatsApp()
+                    .then(() => console.log('✅ [WHATSAPP] Tentativa de conexão iniciada.'))
+                    .catch(err => console.error("❌ [WHATSAPP] Falha crítica na conexão:", err.message));
+            }, 5000);
+        })
         .catch(err => console.error("❌ [DATABASE] Falha ao iniciar:", err.message));
-        
-    waService.connectToWhatsApp()
-        .then(() => console.log('✅ [WHATSAPP] Tentativa de conexão iniciada.'))
-        .catch(err => console.error("❌ [WHATSAPP] Falha crítica na conexão:", err.message));
 });
