@@ -13,7 +13,7 @@ import axios from 'axios';
 import { supabase } from './supabaseClient';
 import Auth from './Auth';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3002').replace(/\/$/, '');
 console.log('🌐 [DEBUG] API_URL configurada:', API_URL);
 
 const DEFAULT_CATEGORIES = [

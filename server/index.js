@@ -12,6 +12,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Rota Raiz / Health Check
+app.get('/', (req, res) => res.send('🚀 Backend Finanças Pro funcionando!'));
+
 const upload = multer({ dest: 'uploads/' });
 const { 
     initDatabase, getRows, saveTransactionsToDb, updateTransactionInDb, deleteTransactionFromDb,
@@ -24,8 +27,9 @@ const { processImageWithGemini } = require('./gemini-service');
 const waService = require('./whatsapp-service');
 const QRCode = require('qrcode');
 
-initDatabase().catch(err => console.error("Falha ao iniciar banco de dados:", err));
-waService.connectToWhatsApp().catch(err => console.error("Falha ao iniciar WhatsApp:", err));
+// Inicialização movida para o listen para garantir bind rápido da porta
+// initDatabase()...
+// waService.connectToWhatsApp()... (veja final do arquivo)
 
 // Endpoint WhatsApp QR
 app.get('/whatsapp-qr', async (req, res) => {
@@ -401,4 +405,11 @@ app.delete('/bank-profiles/:id', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3002;
-app.listen(PORT, () => console.log(`🚀 Servidor pronto na porta ${PORT}`));
+app.listen(PORT, () => {
+    console.log(`🚀 Servidor pronto na porta ${PORT}`);
+    
+    // Inicia serviços pesados após o servidor estar online
+    console.log('--- Iniciando serviços em segundo plano... ---');
+    initDatabase().catch(err => console.error("Falha ao iniciar banco de dados:", err));
+    waService.connectToWhatsApp().catch(err => console.error("Falha ao iniciar WhatsApp:", err));
+});
