@@ -1,4 +1,4 @@
-// 1. Handlers de Erros Globais DE IMEDIATO
+// 1. Handlers de Erros Globais (Vigilantes)
 process.on('uncaughtException', (err) => {
     console.error('💥 [ALERTA] UNCAUGHT EXCEPTION:', err.message);
     console.error(err.stack);
@@ -10,89 +10,64 @@ process.on('unhandledRejection', (reason) => {
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
+const fs = require('fs');
+const QRCode = require('qrcode');
 
 const app = express();
 const PORT = process.env.PORT || 3002;
 
-// 2. Configuração básica de CORS e JSON
-app.use(cors({ origin: '*' }));
+// 2. Configuração de CORS (Liberal para evitar bloqueios no Vercel/Railway)
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 app.set('trust proxy', 1);
 
-// 3. Health Check PRIORITÁRIO (para o Railway validar o container)
-app.get('/', (req, res) => res.send('🚀 Backend ONLINE e estável!'));
-app.get('/health', (req, res) => res.json({ status: 'ok', uptime: process.uptime() }));
+// 3. Health Checks
+app.get('/', (req, res) => res.send('🚀 Backend ONLINE e estável! V3'));
+app.get('/health', (req, res) => res.json({ status: 'ok', uptime: process.uptime(), memory: process.memoryUsage().rss }));
 
-// 4. Bind da porta o mais rápido possível
-app.listen(PORT, () => {
-    console.log(`🚀 [SERVIDOR] Porta ${PORT} aberta com sucesso.`);
-    console.log(`🧠 [RAM] RSS: ${Math.round(process.memoryUsage().rss / 1024 / 1024)} MB`);
-});
+// 4. Bind da porta IMEDIATO
+app.listen(PORT, () => console.log(`🚀 [SERVIDOR] Porta ${PORT} aberta.`));
 
-// 5. Monitor de Memória
+// 5. Vigilante de Memória
 setInterval(() => {
-    const used = process.memoryUsage();
-    console.log(`🧠 [RAM] RSS: ${Math.round(used.rss / 1024 / 1024 * 100) / 100} MB | Heap: ${Math.round(used.heapUsed / 1024 / 1024 * 100) / 100} MB`);
+    const used = process.memoryUsage().rss / 1024 / 1024;
+    console.log(`🧠 [RAM] RSS: ${Math.round(used)} MB`);
 }, 60000);
 
-// 6. Imports locais cercados por try-catch
-let initDatabase, getRows, saveTransactionsToDb, updateTransactionInDb, deleteTransactionFromDb;
-let getSuppliers, addSupplier, updateSupplier, deleteSupplierFromDb;
-let getSettings, updateSetting;
-let getBankProfiles, addBankProfile, updateBankProfile, deleteBankProfile;
-let parseFinancialData, processImageWithGemini, waService;
-let multer, fs, path, GoogleSpreadsheet, JWT;
-
+// 6. Carregamento Seguro dos Módulos
+let db, waService, gemini, utils, multer;
 try {
     multer = require('multer');
-    fs = require('fs');
-    path = require('path');
-    const db = require('./database');
-    initDatabase = db.initDatabase;
-    getRows = db.getRows;
-    saveTransactionsToDb = db.saveTransactionsToDb;
-    updateTransactionInDb = db.updateTransactionInDb;
-    deleteTransactionFromDb = db.deleteTransactionFromDb;
-    getSuppliers = db.getSuppliers;
-    addSupplier = db.addSupplier;
-    updateSupplier = db.updateSupplier;
-    deleteSupplierFromDb = db.deleteSupplierFromDb;
-    getSettings = db.getSettings;
-    updateSetting = db.updateSetting;
-    getBankProfiles = db.getBankProfiles;
-    addBankProfile = db.addBankProfile;
-    updateBankProfile = db.updateBankProfile;
-    deleteBankProfile = db.deleteBankProfile;
-
-    const utils = require('./utils');
-    parseFinancialData = utils.parseFinancialData;
-
-    const gemini = require('./gemini-service');
-    processImageWithGemini = gemini.processImageWithGemini;
-
+    db = require('./database');
+    utils = require('./utils');
+    gemini = require('./gemini-service');
     waService = require('./whatsapp-service');
-    
-    const gSheets = require('google-spreadsheet');
-    GoogleSpreadsheet = gSheets.GoogleSpreadsheet;
-    const gAuth = require('google-auth-library');
-    JWT = gAuth.JWT;
-
-    console.log('✅ [BOOT] Módulos internos carregados com sucesso.');
-    
-    // Inicia banco após o boot
-    initDatabase().catch(e => console.error('❌ [DATABASE] Erro na inicialização:', e.message));
+    console.log('✅ [BOOT] Módulos carregados.');
+    db.initDatabase().catch(e => console.error('❌ [DB] Error:', e.message));
 } catch (err) {
-    console.error('❌ [CRITICAL] Falha ao carregar módulos internos no require:', err.message);
-    console.error(err.stack);
+    console.error('❌ [CRITICAL] Falha nos módulos:', err.message);
 }
 
+// Fallbacks para evitar crash em rotas
 const upload = multer ? multer({ dest: 'uploads/' }) : { array: () => (req, res, next) => next() };
-const QRCode = require('qrcode');
+const safeWa = {
+    getStatus: () => waService?.getStatus?.() || 'disconnected',
+    getQrCode: () => waService?.getQrCode?.() || null,
+    connectToWhatsApp: () => waService?.connectToWhatsApp?.() || Promise.resolve(),
+    logoutWhatsApp: () => waService?.logoutWhatsApp?.() || Promise.resolve()
+};
 
-// Endpoint para iniciar WhatsApp MANUALMENTE (evita queda no boot)
+// Endpoint para iniciar WhatsApp MANUALMENTE
 app.get('/whatsapp-start', (req, res) => {
     console.log('🚀 [WHATSAPP] Ativação manual solicitada.');
-    waService.connectToWhatsApp()
+    if (!waService) return res.status(503).json({ error: 'Serviço de WhatsApp não carregado.' });
+    
+    safeWa.connectToWhatsApp()
         .then(() => console.log('✅ [WHATSAPP] Iniciado.'))
         .catch(err => console.error("❌ [WHATSAPP] Erro:", err.message));
     res.json({ message: 'Iniciando conexão com WhatsApp...' });
@@ -100,34 +75,30 @@ app.get('/whatsapp-start', (req, res) => {
 
 // Endpoint WhatsApp QR
 app.get('/whatsapp-qr', async (req, res) => {
-    const qr = waService.getQrCode();
-    if (!qr) return res.status(404).json({ error: 'QR Code não disponível ou já conectado.' });
+    const qr = safeWa.getQrCode();
+    if (!qr) return res.status(404).json({ error: 'QR Code não disponível.' });
 
     try {
         const qrImage = await QRCode.toDataURL(qr);
         res.json({ qr: qrImage });
     } catch (err) {
-        res.status(500).json({ error: 'Erro ao gerar imagem do QR Code' });
+        res.status(500).json({ error: 'Erro ao gerar imagem' });
     }
 });
 
 // Endpoint WhatsApp Status
 app.get('/whatsapp-status', (req, res) => {
-    const status = waService.getStatus();
-    console.log(`📊 [STATUS] Enviando status do WhatsApp: ${status}`);
+    const status = safeWa.getStatus();
     res.json({ status });
 });
 
 app.post('/whatsapp-logout', async (req, res) => {
     try {
-        console.log('--- Recebido pedido de logout do WhatsApp ---');
-        await waService.logoutWhatsApp();
-        // Dispara uma nova tentativa de conexão para gerar um novo QR Code
-        waService.connectToWhatsApp().catch(err => console.error("Erro ao reiniciar conexão:", err));
-        res.json({ message: 'Desconectado com sucesso! Reiniciando conexão...' });
+        await safeWa.logoutWhatsApp();
+        safeWa.connectToWhatsApp().catch(e => {});
+        res.json({ message: 'Desconectado!' });
     } catch (error) {
-        console.error('Erro detalhado no logout:', error);
-        res.status(500).json({ error: 'Erro ao desconectar', details: error.message });
+        res.status(500).json({ error: 'Erro no logout' });
     }
 });
 
@@ -473,5 +444,5 @@ app.delete('/bank-profiles/:id', async (req, res) => {
         res.status(500).json({ error: 'Erro ao excluir perfil', details: error.message });
     }
 });
-});
+
 
