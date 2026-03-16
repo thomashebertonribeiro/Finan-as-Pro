@@ -9,7 +9,7 @@ const { Boom } = require('@hapi/boom');
 const pino = require('pino');
 const fs = require('fs');
 const path = require('path');
-const Tesseract = require('tesseract.js');
+// const Tesseract = require('tesseract.js'); // Movido para dentro das funções
 const { parseFinancialData } = require('./utils');
 const { saveTransactionsToDb, getSuppliers, getSetting } = require('./database');
 const { processImageWithGemini } = require('./gemini-service');
@@ -274,6 +274,7 @@ async function handleImageMessage(sock, jid, imageMessage) {
         // --- Passo 2: Fallback para Tesseract se Gemini falhar ---
         if (!transactions) {
             console.log('--- Fallback: Usando OCR Tesseract ---');
+            const Tesseract = require('tesseract.js'); // Lazy load
             const { data: { text } } = await Tesseract.recognize(tempPath, 'por');
             fs.writeFileSync(path.join(__dirname, 'last_wa_ocr_debug.txt'), text);
             transactions = parseFinancialData(text, suppliers);

@@ -4,7 +4,7 @@ const multer = require('multer');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
-const Tesseract = require('tesseract.js');
+// const Tesseract = require('tesseract.js'); // Carregado sob demanda para economizar RAM
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 const { JWT } = require('google-auth-library');
 
@@ -60,9 +60,14 @@ const { processImageWithGemini } = require('./gemini-service');
 const waService = require('./whatsapp-service');
 const QRCode = require('qrcode');
 
-// Inicialização movida para o listen para garantir bind rápido da porta
-// initDatabase()...
-// waService.connectToWhatsApp()... (veja final do arquivo)
+// Endpoint para iniciar WhatsApp MANUALMENTE (evita queda no boot)
+app.get('/whatsapp-start', (req, res) => {
+    console.log('🚀 [WHATSAPP] Ativação manual solicitada.');
+    waService.connectToWhatsApp()
+        .then(() => console.log('✅ [WHATSAPP] Iniciado.'))
+        .catch(err => console.error("❌ [WHATSAPP] Erro:", err.message));
+    res.json({ message: 'Iniciando conexão com WhatsApp...' });
+});
 
 // Endpoint WhatsApp QR
 app.get('/whatsapp-qr', async (req, res) => {
@@ -126,7 +131,8 @@ app.post('/process-image', upload.array('images'), async (req, res) => {
                 });
             } else {
                 // --- Fallback para Tesseract ---
-                console.log(`⚠️ Gemini indisponível. Usando Tesseract para ${file.originalname}`);
+                console.log(`⚠️ Gemini indisponível. Usando Tesseract p/ ${file.originalname}`);
+                const Tesseract = require('tesseract.js'); // Lazy load
                 const { data: { text } } = await Tesseract.recognize(imagePath, 'por');
                 fullRawText += `\n--- FILE: ${file.originalname} ---\n${text}`;
                 transactions = parseFinancialData(text, suppliers);
@@ -450,13 +456,7 @@ app.listen(PORT, () => {
     initDatabase()
         .then(() => {
             console.log('✅ [DATABASE] Banco iniciado com sucesso.');
-            // Espera mais 5 segundos para o WhatsApp não brigar por CPU no início
-            console.log('⌛ [WHATSAPP] Aguardando 5s para iniciar conexão...');
-            setTimeout(() => {
-                waService.connectToWhatsApp()
-                    .then(() => console.log('✅ [WHATSAPP] Tentativa de conexão iniciada.'))
-                    .catch(err => console.error("❌ [WHATSAPP] Falha crítica na conexão:", err.message));
-            }, 5000);
+            console.log('💡 [SISTEMA] WhatsApp aguardando ativação manual via /whatsapp-start');
         })
         .catch(err => console.error("❌ [DATABASE] Falha ao iniciar:", err.message));
 });

@@ -393,6 +393,18 @@ const App = () => {
     }
   };
 
+  const handleStartWhatsApp = async () => {
+    try {
+      showToast('Iniciando instância WhatsApp...');
+      setWaStatus('connecting');
+      await axios.get(`${API_URL}/whatsapp-start`);
+    } catch (err) {
+      const details = err.response?.data?.details || err.message;
+      showToast(`Erro ao iniciar: ${details}`, 'error');
+      setWaStatus('disconnected');
+    }
+  };
+
   useEffect(() => {
     // Solicitar permissão de notificações
     if ("Notification" in window && Notification.permission === 'default') {
@@ -1634,10 +1646,28 @@ const App = () => {
                     <img src={waQr} style={{ width: '180px', borderRadius: '0.5rem', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }} alt="QR Code" />
                     <p style={{ fontSize: '0.8rem', fontWeight: '600' }}>Escaneie para conectar</p>
                   </div>
-                ) : (
+                ) : waStatus === 'connecting' ? (
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', color: 'var(--text-muted)' }}>
                     <Loader2 className="animate-spin" size={32} />
-                    <p style={{ fontSize: '0.8rem' }}>Inicializando instância...</p>
+                    <p style={{ fontSize: '0.8rem' }}>Tentando estabelecer conexão...</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', color: 'var(--text-muted)' }}>
+                    <div style={{ width: 64, height: 64, background: '#f1f5f9', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Smartphone size={32} />
+                    </div>
+                    <div>
+                      <p style={{ fontSize: '0.9rem', fontWeight: '700', color: '#64748b', marginBottom: '0.25rem' }}>WhatsApp Desconectado</p>
+                      <p style={{ fontSize: '0.75rem', marginBottom: '1rem' }}>Clique abaixo para ativar o serviço e gerar o QR Code.</p>
+                    </div>
+                    <button 
+                      onClick={handleStartWhatsApp}
+                      className="btn-primary"
+                      style={{ padding: '0.75rem 2rem', width: '100%', justifyContent: 'center' }}
+                    >
+                      <Plus size={18} />
+                      Conectar WhatsApp
+                    </button>
                   </div>
                 )}
               </div>
