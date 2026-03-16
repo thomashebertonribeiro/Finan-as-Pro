@@ -7,6 +7,16 @@ process.on('unhandledRejection', (reason) => {
     console.error('💥 [ALERTA] UNHANDLED REJECTION:', reason);
 });
 
+// Handlers de desligamento (Para depurar o Railway)
+process.on('SIGTERM', () => {
+    console.log('🛑 [SISTEMA] Recebido SIGTERM. O Railway está encerrando o servidor.');
+    process.exit(0);
+});
+process.on('SIGINT', () => {
+    console.log('🛑 [SISTEMA] Recebido SIGINT. Servidor interrompido.');
+    process.exit(0);
+});
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');

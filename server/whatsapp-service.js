@@ -9,6 +9,7 @@ const { Boom } = require('@hapi/boom');
 const pino = require('pino');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 // const Tesseract = require('tesseract.js'); // Movido para dentro das funções
 const { parseFinancialData } = require('./utils');
 const { saveTransactionsToDb, getSuppliers, getSetting } = require('./database');
@@ -26,10 +27,10 @@ async function connectToWhatsApp() {
         qrCode = null;
         connectionStatus = 'connecting';
         
-        // Verifica se o diretório é gravável (Railway tip)
-        const authPath = path.resolve('baileys_auth_info');
+        // Usa diretório temporário para garantir permissão de escrita em Cloud/Docker
+        const authPath = path.join(os.tmpdir(), 'financas_pro_baileys_auth');
         if (!fs.existsSync(authPath)) {
-            console.log('--- [WHATSAPP] Criando diretório de autenticação... ---');
+            console.log(`--- [WHATSAPP] Criando diretório de autenticação em ${authPath}... ---`);
             fs.mkdirSync(authPath, { recursive: true });
         }
 
@@ -54,10 +55,11 @@ async function connectToWhatsApp() {
             }
 
             if (connection === 'close') {
-                const statusCode = (lastDisconnect.error instanceof Boom) ? lastDisconnect.error.output.statusCode : 0;
+                const error = lastDisconnect?.error;
+                const statusCode = (error instanceof Boom) ? error.output.statusCode : (error?.output?.statusCode || 0);
                 const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
                 
-                console.error(`❌ [WHATSAPP] Conexão Fechada (${statusCode}):`, lastDisconnect.error?.message);
+                console.error(`❌ [WHATSAPP] Conexão Fechada (Status: ${statusCode}):`, error?.message || 'Sem mensagem erro');
                 
                 connectionStatus = shouldReconnect ? 'connecting' : 'disconnected';
                 qrCode = null;
