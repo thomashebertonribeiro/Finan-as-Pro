@@ -161,16 +161,24 @@ const App = () => {
 
   const fetchWaStatus = async () => {
     try {
-      const resp = await axios.get(`${API_URL}/whatsapp-status`);
-      setWaStatus(resp.data.status);
-      if (resp.data.status === 'qr_ready') {
-        const qrResp = await axios.get(`${API_URL}/whatsapp-qr`);
-        setWaQr(qrResp.data.qr);
+      console.log('📡 [DEBUG] Buscando status do WhatsApp em:', `${API_URL}/whatsapp-status`);
+      const response = await axios.get(`${API_URL}/whatsapp-status`);
+      console.log('📊 [DEBUG] Status recebido:', response.data.status);
+      setWaStatus(response.data.status);
+      
+      if (response.data.status === 'qr_ready') {
+        console.log('🖼️ [DEBUG] Solicitando QR Code...');
+        const qrResponse = await axios.get(`${API_URL}/whatsapp-qr`);
+        setWaQr(qrResponse.data.qr);
       } else {
         setWaQr(null);
       }
-    } catch (error) {
-      console.error("Erro ao buscar status WA:", error);
+    } catch (err) {
+      console.error('❌ [ERROR] Falha ao capturar status WA:', err.message);
+      if (err.response) {
+        console.error('Dados do erro:', err.response.data);
+        console.error('Status do erro:', err.response.status);
+      }
     }
   };
 

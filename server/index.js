@@ -22,8 +22,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Middleware de Log de Requisições
+app.use((req, res, next) => {
+    console.log(`🌐 [REQ] ${req.method} ${req.url} - ${new Date().toLocaleTimeString()}`);
+    next();
+});
+
 // Rota Raiz / Health Check
-app.get('/', (req, res) => res.send('🚀 Backend Finanças Pro funcionando!'));
+app.get('/', (req, res) => {
+    console.log('✅ [HEALTH] Requisição recebida na raiz.');
+    res.send('🚀 Backend Finanças Pro funcionando!');
+});
 
 const upload = multer({ dest: 'uploads/' });
 const { 
@@ -56,7 +65,9 @@ app.get('/whatsapp-qr', async (req, res) => {
 
 // Endpoint WhatsApp Status
 app.get('/whatsapp-status', (req, res) => {
-    res.json({ status: waService.getStatus() });
+    const status = waService.getStatus();
+    console.log(`📊 [STATUS] Enviando status do WhatsApp: ${status}`);
+    res.json({ status });
 });
 
 app.post('/whatsapp-logout', async (req, res) => {
