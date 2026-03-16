@@ -19,12 +19,20 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 const app = express();
-app.use(cors());
+
+// Configuração robusta de CORS
+app.use(cors({
+    origin: '*', // Permitir tudo temporariamente para debugar, ou especifique a URL do Vercel
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+app.set('trust proxy', 1); // Necessário para Railway/Proxies
 app.use(express.json());
 
 // Middleware de Log de Requisições
 app.use((req, res, next) => {
-    console.log(`🌐 [REQ] ${req.method} ${req.url} - ${new Date().toLocaleTimeString()}`);
+    console.log(`🌐 [REQ] ${req.method} ${req.url} - ${new Date().toLocaleTimeString()} - Origin: ${req.get('origin')}`);
     next();
 });
 
