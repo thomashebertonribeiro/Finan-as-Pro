@@ -36,20 +36,20 @@ app.use(cors({
 app.use(express.json());
 app.set('trust proxy', 1);
 
-// 3. Health Checks
-app.get('/', (req, res) => res.send('🚀 Backend ONLINE e estável! V3'));
-app.get('/health', (req, res) => res.json({ status: 'ok', uptime: process.uptime(), memory: process.memoryUsage().rss }));
+// 3. Health Checks - ESSENCIAL PARA O RAILWAY MANTER O CONTAINER VIVO
+app.get('/', (req, res) => res.json({ status: 'live', version: 'V3.1' }));
+app.get('/health', (req, res) => res.json({ status: 'ok', uptime: Math.round(process.uptime()) }));
 
 // 4. Bind da porta IMEDIATO (Forçando 0.0.0.0 para Cloud)
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 [SERVIDOR] Porta ${PORT} aberta em 0.0.0.0.`);
+    console.log(`🚀 [SERVIDOR] Porta ${PORT} aberta com sucesso.`);
 });
 
-// 5. Vigilante de Memória
+// 5. Vigilante de Memória (Reduzido para não poluir logs)
 setInterval(() => {
-    const used = process.memoryUsage().rss / 1024 / 1024;
-    console.log(`🧠 [RAM] RSS: ${Math.round(used)} MB`);
-}, 60000);
+    const rss = process.memoryUsage().rss / 1024 / 1024;
+    if (rss > 400) console.log(`⚠️ [RAM] Uso alto: ${Math.round(rss)} MB`);
+}, 120000);
 
 // 6. Carregamento Seguro dos Módulos
 let db, waService, gemini, utils, multer;

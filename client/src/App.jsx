@@ -159,15 +159,15 @@ const App = () => {
     setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 4000);
   };
 
+  const isFetchingWaRef = React.useRef(false);
   const fetchWaStatus = async () => {
+    if (isFetchingWaRef.current) return;
     try {
-      console.log('📡 [DEBUG] Buscando status do WhatsApp em:', `${API_URL}/whatsapp-status`);
+      isFetchingWaRef.current = true;
       const response = await axios.get(`${API_URL}/whatsapp-status`);
-      console.log('📊 [DEBUG] Status recebido:', response.data.status);
       setWaStatus(response.data.status);
       
       if (response.data.status === 'qr_ready') {
-        console.log('🖼️ [DEBUG] Solicitando QR Code...');
         const qrResponse = await axios.get(`${API_URL}/whatsapp-qr`);
         setWaQr(qrResponse.data.qr);
       } else {
@@ -175,10 +175,8 @@ const App = () => {
       }
     } catch (err) {
       console.error('❌ [ERROR] Falha ao capturar status WA:', err.message);
-      if (err.response) {
-        console.error('Dados do erro:', err.response.data);
-        console.error('Status do erro:', err.response.status);
-      }
+    } finally {
+      isFetchingWaRef.current = false;
     }
   };
 

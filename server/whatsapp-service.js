@@ -46,32 +46,36 @@ async function connectToWhatsApp() {
         });
 
         sock.ev.on('connection.update', (update) => {
-            const { connection, lastDisconnect, qr } = update;
+            try {
+                const { connection, lastDisconnect, qr } = update;
 
-            if (qr) {
-                console.log(`✨ [WHATSAPP] Novo QR Code recebido! (Tamanho: ${qr.length})`);
-                qrCode = qr;
-                connectionStatus = 'qr_ready';
-            }
-
-            if (connection === 'close') {
-                const error = lastDisconnect?.error;
-                const statusCode = (error instanceof Boom) ? error.output.statusCode : (error?.output?.statusCode || 0);
-                const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
-                
-                console.error(`❌ [WHATSAPP] Conexão Fechada (Status: ${statusCode}):`, error?.message || 'Sem mensagem erro');
-                
-                connectionStatus = shouldReconnect ? 'connecting' : 'disconnected';
-                qrCode = null;
-
-                if (shouldReconnect) {
-                    console.log('--- [WHATSAPP] Reiniciando em 5s... ---');
-                    setTimeout(() => connectToWhatsApp(), 5000);
+                if (qr) {
+                    console.log(`✨ [WHATSAPP] QR STRING RECEBIDA (${qr.substring(0, 10)}...)`);
+                    qrCode = qr;
+                    connectionStatus = 'qr_ready';
                 }
-            } else if (connection === 'open') {
-                console.log('🚀 [WHATSAPP] Conectado!');
-                connectionStatus = 'connected';
-                qrCode = null;
+
+                if (connection === 'close') {
+                    const error = lastDisconnect?.error;
+                    const statusCode = (error instanceof Boom) ? error.output.statusCode : (error?.output?.statusCode || 0);
+                    const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+                    
+                    console.error(`❌ [WHATSAPP] Conexão Fechada (Status: ${statusCode}):`, error?.message || 'Sem mensagem erro');
+                    
+                    connectionStatus = shouldReconnect ? 'connecting' : 'disconnected';
+                    qrCode = null;
+
+                    if (shouldReconnect) {
+                        console.log('--- [WHATSAPP] Reiniciando em 5s... ---');
+                        setTimeout(() => connectToWhatsApp().catch(e => {}), 5000);
+                    }
+                } else if (connection === 'open') {
+                    console.log('🚀 [WHATSAPP] Conectado com sucesso!');
+                    connectionStatus = 'connected';
+                    qrCode = null;
+                }
+            } catch (err) {
+                console.error('❌ [WHATSAPP] Erro no listener de conexão:', err.message);
             }
         });
 
