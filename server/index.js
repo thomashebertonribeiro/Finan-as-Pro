@@ -8,6 +8,16 @@ const Tesseract = require('tesseract.js');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 const { JWT } = require('google-auth-library');
 
+// Captura de Erros Globais para evitar crash silencioso no Railway
+process.on('uncaughtException', (err) => {
+    console.error('💥 [ALERTA] UNCAUGHT EXCEPTION:', err.message);
+    console.error(err.stack);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('💥 [ALERTA] UNHANDLED REJECTION:', reason);
+});
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -406,10 +416,17 @@ app.delete('/bank-profiles/:id', async (req, res) => {
 
 const PORT = process.env.PORT || 3002;
 app.listen(PORT, () => {
-    console.log(`🚀 Servidor pronto na porta ${PORT}`);
+    console.log(`🚀 [SERVIDOR] Online na porta ${PORT}`);
+    console.log(`📡 [DEBUG] Teste a URL direta: https://finan-as-pro-production.up.railway.app/`);
     
     // Inicia serviços pesados após o servidor estar online
-    console.log('--- Iniciando serviços em segundo plano... ---');
-    initDatabase().catch(err => console.error("Falha ao iniciar banco de dados:", err));
-    waService.connectToWhatsApp().catch(err => console.error("Falha ao iniciar WhatsApp:", err));
+    console.log('--- [INÍCIO] Carregando serviços de segundo plano... ---');
+    
+    initDatabase()
+        .then(() => console.log('✅ [DATABASE] Banco iniciado com sucesso.'))
+        .catch(err => console.error("❌ [DATABASE] Falha ao iniciar:", err.message));
+        
+    waService.connectToWhatsApp()
+        .then(() => console.log('✅ [WHATSAPP] Tentativa de conexão iniciada.'))
+        .catch(err => console.error("❌ [WHATSAPP] Falha crítica na conexão:", err.message));
 });

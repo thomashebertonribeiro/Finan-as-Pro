@@ -21,55 +21,61 @@ let connectionStatus = 'disconnected'; // 'disconnected', 'connecting', 'connect
 const pendingConfirmations = {};
 
 async function connectToWhatsApp() {
-    console.log('--- Iniciando Conexão WhatsApp ---');
-    qrCode = null;
-    connectionStatus = 'connecting';
-    const { state, saveCreds } = await useMultiFileAuthState('baileys_auth_info');
-    const { version, isLatest } = await fetchLatestBaileysVersion();
-
-    connectionStatus = 'connecting';
-    console.log(`--- Versão Baileys: ${version} (Mais recente: ${isLatest}) ---`);
-
-    sock = makeWASocket({
-        version,
-        auth: state,
-        logger: pino({ level: 'info' }), // Ativando um pouco de log para debug
-    });
-
-    sock.ev.on('connection.update', (update) => {
-        const { connection, lastDisconnect, qr } = update;
-
-        if (qr) {
-            qrCode = qr;
-            connectionStatus = 'qr_ready';
-            console.log('--- QR Code Recebido do Baileys: Disponível para escaneamento ---');
+    try {
+        console.log('--- [WHATSAPP] Iniciando Conexão ---');
+        qrCode = null;
+        connectionStatus = 'connecting';
+        
+        // Verifica se o diretório é gravável (Railway tip)
+        const authPath = path.resolve('baileys_auth_info');
+        if (!fs.existsSync(authPath)) {
+            console.log('--- [WHATSAPP] Criando diretório de autenticação... ---');
+            fs.mkdirSync(authPath, { recursive: true });
         }
 
-        if (connection === 'close') {
-            const statusCode = (lastDisconnect.error instanceof Boom) ? lastDisconnect.error.output.statusCode : 0;
-            const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
-            
-            console.error(`--- Conexão WhatsApp Fechada (Status: ${statusCode}):`, lastDisconnect.error?.message);
-            
-            connectionStatus = shouldReconnect ? 'connecting' : 'disconnected';
-            qrCode = null;
+        const { state, saveCreds } = await useMultiFileAuthState(authPath);
+        const { version, isLatest } = await fetchLatestBaileysVersion();
 
-            if (shouldReconnect) {
-                console.log('--- Tentando Reconectar em 5 segundos... ---');
-                setTimeout(() => connectToWhatsApp(), 5000);
-            } else {
-                console.log('--- Desconectado: Usuário realizou logout ou sessão expirada. ---');
+        console.log(`--- [WHATSAPP] Versão: ${version} ---`);
+
+        sock = makeWASocket({
+            version,
+            auth: state,
+            logger: pino({ level: 'error' }), // Reduzindo log para não poluir
+        });
+
+        sock.ev.on('connection.update', (update) => {
+            const { connection, lastDisconnect, qr } = update;
+
+            if (qr) {
+                qrCode = qr;
+                connectionStatus = 'qr_ready';
+                console.log('✅ [WHATSAPP] QR Code gerado.');
             }
-        } else if (connection === 'open') {
-            console.log('--- WhatsApp Conectado com Sucesso! ---');
-            connectionStatus = 'connected';
-            qrCode = null;
-        }
-    });
 
-    sock.ev.on('creds.update', saveCreds);
+            if (connection === 'close') {
+                const statusCode = (lastDisconnect.error instanceof Boom) ? lastDisconnect.error.output.statusCode : 0;
+                const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+                
+                console.error(`❌ [WHATSAPP] Conexão Fechada (${statusCode}):`, lastDisconnect.error?.message);
+                
+                connectionStatus = shouldReconnect ? 'connecting' : 'disconnected';
+                qrCode = null;
 
-    sock.ev.on('messages.upsert', async ({ messages, type }) => {
+                if (shouldReconnect) {
+                    console.log('--- [WHATSAPP] Reiniciando em 5s... ---');
+                    setTimeout(() => connectToWhatsApp(), 5000);
+                }
+            } else if (connection === 'open') {
+                console.log('🚀 [WHATSAPP] Conectado!');
+                connectionStatus = 'connected';
+                qrCode = null;
+            }
+        });
+
+        sock.ev.on('creds.update', saveCreds);
+
+        sock.ev.on('messages.upsert', async ({ messages, type }) => {
         // Ignorar 'append' (sincronização de histórico) para evitar loops infinitos
         // Em versões recentes do Baileys, self-chat ao vivo também chega como 'notify'
         if (type !== 'notify') return;
@@ -193,6 +199,11 @@ async function connectToWhatsApp() {
                 }
         }
     });
+
+    } catch (err) {
+        console.error('💥 [WHATSAPP] Erro fatal na inicialização:', err.message);
+        connectionStatus = 'disconnected';
+    }
 }
 
 async function handleTextMessage(sock, jid, text) {
@@ -288,10 +299,14 @@ async function handleImageMessage(sock, jid, imageMessage) {
         } else {
             await sock.sendMessage(jid, { text: '⚠️ *Não consegui extrair dados desta imagem.*\n\nIsso pode acontecer se:\n1. A imagem estiver embaçada\n2. Não for um comprovante financeiro\n3. O banco ainda não for suportado pela minha IA\n\n*Dica:* tente enviar o texto manual (ex: "gastei 50 no mercado").' });
         }
+    } catch (err) {
+        console.error('Erro ao processar imagem:', err);
+        await sock.sendMessage(jid, { text: '❌ Erro ao processar a imagem. Tente novamente mais tarde.' });
     } finally {
         if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
     }
 }
+
 
 function getQrCode() {
     return qrCode;
