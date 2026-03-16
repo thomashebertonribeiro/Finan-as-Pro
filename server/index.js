@@ -1,247 +1,210 @@
-// 1. Handlers de Erros Globais (Vigilantes)
+// ============================================================
+// SERVIDOR BACKEND - FINANÇAS PRO
+// ============================================================
+
+// 1. Handlers Globais de Erro
 process.on('uncaughtException', (err) => {
-    console.error('💥 [ALERTA] UNCAUGHT EXCEPTION:', err.message);
+    console.error('💥 [CRASH] UNCAUGHT EXCEPTION:', err.message);
     console.error(err.stack);
 });
 process.on('unhandledRejection', (reason) => {
-    console.error('💥 [ALERTA] UNHANDLED REJECTION:', reason);
+    console.error('💥 [CRASH] UNHANDLED REJECTION:', reason);
 });
-
-// Handlers de desligamento (Para depurar o Railway)
 process.on('SIGTERM', () => {
-    console.log('🛑 [SISTEMA] Recebido SIGTERM. O Railway está encerrando o servidor.');
-    process.exit(0);
-});
-process.on('SIGINT', () => {
-    console.log('🛑 [SISTEMA] Recebido SIGINT. Servidor interrompido.');
+    console.log('🛑 [SISTEMA] SIGTERM recebido.');
     process.exit(0);
 });
 
+// 2. Dependências Externas
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const QRCode = require('qrcode');
 
 const app = express();
 const PORT = process.env.PORT || 3002;
 
-// 2. Configuração de CORS (Liberal para evitar bloqueios no Vercel/Railway)
-app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
+// 3. Middlewares
+app.use(cors({ origin: '*', methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], allowedHeaders: ['Content-Type', 'Authorization'] }));
 app.use(express.json());
 app.set('trust proxy', 1);
 
-// 3. Health Checks - ESSENCIAL PARA O RAILWAY MANTER O CONTAINER VIVO
-app.get('/', (req, res) => res.json({ status: 'live', version: 'V3.1' }));
+// 4. Health Checks (para Railway manter o container vivo)
+app.get('/', (req, res) => res.json({ status: 'live', version: '4.0' }));
 app.get('/health', (req, res) => res.json({ status: 'ok', uptime: Math.round(process.uptime()) }));
 
-// 4. Bind da porta IMEDIATO (Forçando 0.0.0.0 para Cloud)
+// 5. Servidor inicia PRIMEIRO
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 [SERVIDOR] Porta ${PORT} aberta com sucesso.`);
+    console.log(`🚀 [SERVIDOR] Porta ${PORT} aberta com sucesso. V4.0`);
 });
 
-// 5. Vigilante de Memória (Reduzido para não poluir logs)
-setInterval(() => {
-    const rss = process.memoryUsage().rss / 1024 / 1024;
-    if (rss > 400) console.log(`⚠️ [RAM] Uso alto: ${Math.round(rss)} MB`);
-}, 120000);
+// 6. Módulos carregados APÓS o servidor estar online
+let db = null;
+let gemini = null;
+let utils = null;
+let waService = null;
+let multer = null;
 
-// 6. Carregamento Seguro dos Módulos
-let db, waService, gemini, utils, multer;
 try {
     multer = require('multer');
     db = require('./database');
     utils = require('./utils');
     gemini = require('./gemini-service');
     waService = require('./whatsapp-service');
-    console.log('✅ [BOOT] Módulos carregados.');
-    db.initDatabase().catch(e => console.error('❌ [DB] Error:', e.message));
+    console.log('✅ [BOOT] Todos os módulos carregados.');
+    db.initDatabase().catch(e => console.error('❌ [DB] Erro na inicialização:', e.message));
 } catch (err) {
-    console.error('❌ [CRITICAL] Falha nos módulos:', err.message);
+    console.error('❌ [CRITICAL] Falha ao carregar módulos:', err.message);
+    console.error(err.stack);
 }
 
-// Fallbacks para evitar crash em rotas
+// Upload de arquivos
 const upload = multer ? multer({ dest: 'uploads/' }) : { array: () => (req, res, next) => next() };
+
+// Proxy seguro do WhatsApp
 const safeWa = {
-    getStatus: () => waService?.getStatus?.() || 'disconnected',
-    getQrCode: () => waService?.getQrCode?.() || null,
-    connectToWhatsApp: () => waService?.connectToWhatsApp?.() || Promise.resolve(),
-    logoutWhatsApp: () => waService?.logoutWhatsApp?.() || Promise.resolve()
+    getStatus: () => { try { return waService?.getStatus?.() || 'disconnected'; } catch(e) { return 'disconnected'; } },
+    getQrCode: () => { try { return waService?.getQrCode?.() || null; } catch(e) { return null; } },
+    connectToWhatsApp: () => { try { return waService?.connectToWhatsApp?.() || Promise.resolve(); } catch(e) { return Promise.resolve(); } },
+    logoutWhatsApp: () => { try { return waService?.logoutWhatsApp?.() || Promise.resolve(); } catch(e) { return Promise.resolve(); } }
 };
 
-// Endpoint para iniciar WhatsApp MANUALMENTE
+// ============================================================
+// ROTAS WHATSAPP
+// ============================================================
+
 app.get('/whatsapp-start', (req, res) => {
-    console.log('🚀 [WHATSAPP] Ativação manual solicitada.');
-    if (!waService) return res.status(503).json({ error: 'Serviço de WhatsApp não carregado.' });
-    
+    console.log('📱 [WHATSAPP] Ativação solicitada.');
+    if (!waService) return res.status(503).json({ error: 'Serviço de WhatsApp não disponível.' });
     safeWa.connectToWhatsApp()
         .then(() => console.log('✅ [WHATSAPP] Iniciado.'))
-        .catch(err => console.error("❌ [WHATSAPP] Erro:", err.message));
-    res.json({ message: 'Iniciando conexão com WhatsApp...' });
+        .catch(err => console.error('❌ [WHATSAPP] Erro ao iniciar:', err.message));
+    res.json({ message: 'Iniciando conexão...' });
 });
 
-// Endpoint WhatsApp QR
-app.get('/whatsapp-qr', async (req, res) => {
-    console.log('🖼️ [QR] Requisição de imagem de QR Code recebida.');
-    const qr = safeWa.getQrCode();
-    
-    if (!qr) {
-        console.log('⚠️ [QR] Nenhum QR Code disponível no serviço.');
-        return res.status(404).json({ error: 'QR Code não disponível.' });
-    }
-
-    try {
-        console.log('🎨 [QR] Convertendo string para DataURL...');
-        const qrImage = await QRCode.toDataURL(qr);
-        console.log('✅ [QR] Imagem gerada com sucesso.');
-        res.json({ qr: qrImage });
-    } catch (err) {
-        console.error('❌ [QR] Erro ao gerar imagem:', err.message);
-        res.status(500).json({ error: 'Erro ao gerar imagem' });
-    }
-});
-
-// Endpoint WhatsApp Status
 app.get('/whatsapp-status', (req, res) => {
     const status = safeWa.getStatus();
-    console.log(`📊 [STATUS] Enviando para o Frontend: ${status}`);
     res.json({ status });
+});
+
+app.get('/whatsapp-qr', async (req, res) => {
+    const qr = safeWa.getQrCode();
+    if (!qr) return res.status(404).json({ error: 'QR Code não disponível.' });
+    try {
+        const qrImage = await QRCode.toDataURL(qr);
+        res.json({ qr: qrImage });
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao gerar imagem do QR.' });
+    }
 });
 
 app.post('/whatsapp-logout', async (req, res) => {
     try {
         await safeWa.logoutWhatsApp();
-        safeWa.connectToWhatsApp().catch(e => {});
+        safeWa.connectToWhatsApp().catch(() => {});
         res.json({ message: 'Desconectado!' });
     } catch (error) {
-        res.status(500).json({ error: 'Erro no logout' });
+        res.status(500).json({ error: 'Erro ao desconectar.' });
     }
 });
 
+// ============================================================
+// ROTAS DE IMAGEM / PROCESSAMENTO
+// ============================================================
+
 app.post('/process-image', upload.array('images'), async (req, res) => {
-    if (!req.files || req.files.length === 0) return res.status(400).send('Nenhuma imagem enviada.');
+    if (!db || !gemini) return res.status(503).json({ error: 'Serviço não disponível.' });
+    if (!req.files || req.files.length === 0) return res.status(400).json({ error: 'Nenhuma imagem enviada.' });
 
     try {
-        console.log(`--- Processando ${req.files.length} imagens ---`);
+        const suppliers = await db.getSuppliers();
         let allTransactions = [];
-        let fullRawText = "";
-
-        const suppliers = await getSuppliers();
+        let fullRawText = '';
 
         for (const file of req.files) {
             const { path: imagePath } = file;
             const mimeType = file.mimetype || 'image/jpeg';
+            let transactions = null;
 
-            // --- Tenta processar com Gemini IA ---
-            let transactions = await processImageWithGemini(imagePath, mimeType);
+            try {
+                transactions = await gemini.processImageWithGemini(imagePath, mimeType);
+            } catch (e) {
+                console.error('Gemini falhou:', e.message);
+            }
 
             if (transactions) {
-                console.log(`✅ Gemini: ${transactions.length} transações encontradas em ${file.originalname}`);
-                // Aplica categorização automática
                 transactions = transactions.map(t => {
-                    const matchedSupplier = suppliers.find(sup =>
-                        t.Descrição.toLowerCase().includes(sup.nome.toLowerCase())
-                    );
-                    if (matchedSupplier) t.Categoria = matchedSupplier.categoria;
+                    const match = suppliers.find(s => t.Descrição.toLowerCase().includes(s.nome.toLowerCase()));
+                    if (match) t.Categoria = match.categoria;
                     return t;
                 });
             } else {
-                // --- Fallback para Tesseract ---
-                console.log(`⚠️ Gemini indisponível. Usando Tesseract p/ ${file.originalname}`);
-                const Tesseract = require('tesseract.js'); // Lazy load
+                const Tesseract = require('tesseract.js');
                 const { data: { text } } = await Tesseract.recognize(imagePath, 'por');
                 fullRawText += `\n--- FILE: ${file.originalname} ---\n${text}`;
-                transactions = parseFinancialData(text, suppliers);
+                transactions = utils.parseFinancialData(text, suppliers);
             }
 
-            allTransactions = [...allTransactions, ...transactions];
-
-            try { fs.unlinkSync(imagePath); } catch (e) { console.error("Erro ao deletar temp:", e); }
+            allTransactions = [...allTransactions, ...(transactions || [])];
+            try { fs.unlinkSync(imagePath); } catch (e) {}
         }
 
-        if (fullRawText) {
-            fs.writeFileSync(path.join(__dirname, 'last_ocr_debug.txt'), fullRawText);
-        }
+        if (fullRawText) fs.writeFileSync(path.join(__dirname, 'last_ocr_debug.txt'), fullRawText);
 
-        const uniqueTransactions = allTransactions.filter((v, i, a) =>
+        const unique = allTransactions.filter((v, i, a) =>
             a.findIndex(t => t.Descrição === v.Descrição && t['Valor (R$)'] === v['Valor (R$)'] && t.Data === v.Data) === i
         );
 
-        console.log(`Total de transações: ${uniqueTransactions.length}`);
-        res.json({ message: 'Processamento concluído.', data: uniqueTransactions });
+        res.json({ message: 'Processamento concluído.', data: unique });
     } catch (err) {
         console.error('ERRO /process-image:', err);
-        res.status(500).json({ error: 'Erro no processamento das imagens', details: err.message });
+        res.status(500).json({ error: 'Erro no processamento', details: err.message });
     }
 });
 
-// Endpoint 2: Salva transações confirmadas pelo usuário
-app.post('/save-transactions', async (req, res) => {
-    const { transactions } = req.body;
+// ============================================================
+// ROTAS DE TRANSAÇÕES
+// ============================================================
 
+app.post('/save-transactions', async (req, res) => {
+    if (!db) return res.status(503).json({ error: 'Banco de dados não disponível.' });
+    const { transactions } = req.body;
     if (!transactions || !Array.isArray(transactions) || transactions.length === 0) {
         return res.status(400).json({ error: 'Nenhuma transação para salvar.' });
     }
-
     try {
-        console.log(`--- Salvando ${transactions.length} transações confirmadas ---`);
-        await saveTransactionsToDb(transactions);
-
-        console.log('✅ Dados salvos no banco local!');
-        res.json({ message: 'Sucesso! Dados gravados no banco de dados.' });
+        await db.saveTransactionsToDb(transactions);
+        res.json({ message: 'Dados salvos com sucesso!' });
     } catch (err) {
-        console.error('ERRO AO SALVAR:', err);
-        res.status(500).json({ error: 'Erro ao gravar no banco', details: err.message });
+        res.status(500).json({ error: 'Erro ao salvar', details: err.message });
     }
 });
 
-// Endpoint 3: Busca resumo para o Dashboard com Filtros
 app.get('/dashboard-stats', async (req, res) => {
-    const { startDate, endDate } = req.query; // Formato esperado: YYYY-MM-DD
-    console.log(`[DEBUG /dashboard-stats] req.query:`, req.query);
-
+    if (!db) return res.json({ total: '0,00', entradas: '0,00', saidas: '0,00', investido: '0,00', categoryList: [], chartData: [] });
+    const { startDate, endDate } = req.query;
     try {
-        const rows = await getRows();
-
-        let totalEntradas = 0;
-        let totalSaidas = 0;
-        let totalInvestido = 0;
-        let globalTotal = 0; // Independente de filtro
-        const monthlyData = {};
-        const categoryData = {};
-
+        const rows = await db.getRows();
+        let totalEntradas = 0, totalSaidas = 0, totalInvestido = 0, globalTotal = 0;
+        const monthlyData = {}, categoryData = {};
         const start = startDate ? new Date(startDate + 'T00:00:00') : null;
         const end = endDate ? new Date(endDate + 'T23:59:59') : null;
 
         rows.forEach(row => {
-            const dataStr = row['Data']; // DD/MM/AAAA
+            const dataStr = row['Data'];
             if (!dataStr) return;
-
             const [day, month, year] = dataStr.split('/');
             const rowDate = new Date(year, month - 1, day);
-
-            const valorRaw = row['Valor (R$)'];
-            if (!valorRaw) return;
-
-            const valorStr = String(valorRaw).replace(/\./g, '').replace(',', '.');
+            const valorStr = String(row['Valor (R$)'] || '0').replace(/\./g, '').replace(',', '.');
             const valor = parseFloat(valorStr);
             if (isNaN(valor)) return;
-
             const tipo = row['Tipo'];
             const categoria = row['Categoria'] || 'Geral';
 
-            if (tipo === 'Entrada') {
-                globalTotal += valor;
-            } else {
-                globalTotal -= valor;
-            }
-
-            // Filtro de Período
+            if (tipo === 'Entrada') globalTotal += valor; else globalTotal -= valor;
             if (start && rowDate < start) return;
             if (end && rowDate > end) return;
 
@@ -249,14 +212,11 @@ app.get('/dashboard-stats', async (req, res) => {
                 totalEntradas += valor;
             } else if (categoria === 'Investimentos') {
                 totalInvestido += valor;
-                // Investimentos não reduzem o "total entradas" mas são uma saída de caixa
             } else {
                 totalSaidas += valor;
-                // Agrupamento por Categoria (apenas saídas comuns)
                 categoryData[categoria] = (categoryData[categoria] || 0) + valor;
             }
 
-            // Agrupamento por mês/ano para o gráfico
             const monthYear = `${month}/${year}`;
             if (!monthlyData[monthYear]) monthlyData[monthYear] = { name: monthYear, entradas: 0, saidas: 0, investimentos: 0 };
             if (tipo === 'Entrada') monthlyData[monthYear].entradas += valor;
@@ -264,13 +224,9 @@ app.get('/dashboard-stats', async (req, res) => {
             else monthlyData[monthYear].saidas += valor;
         });
 
-        // Formata lista de categorias ordenada por valor
-        const categoryList = Object.entries(categoryData)
-            .map(([name, value]) => ({ name, value }))
-            .sort((a, b) => b.value - a.value);
-
+        const categoryList = Object.entries(categoryData).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
         res.json({
-            total: globalTotal.toFixed(2).replace('.', ','), // Agora é o global
+            total: globalTotal.toFixed(2).replace('.', ','),
             totalPeriodo: (totalEntradas - totalSaidas - totalInvestido).toFixed(2).replace('.', ','),
             entradas: totalEntradas.toFixed(2).replace('.', ','),
             saidas: totalSaidas.toFixed(2).replace('.', ','),
@@ -283,187 +239,128 @@ app.get('/dashboard-stats', async (req, res) => {
             })
         });
     } catch (err) {
-        console.error('ERRO STATS:', err);
         res.status(500).json({ error: 'Erro ao carregar estatísticas' });
     }
 });
 
-// Endpoint CRUD: Listar todas as transações
 app.get('/transactions', async (req, res) => {
+    if (!db) return res.json([]);
     try {
-        const rows = await getRows();
-        res.json(rows);
+        res.json(await db.getRows());
     } catch (error) {
-        res.status(500).json({ error: 'Erro ao carregar transações', details: error.message });
+        res.status(500).json({ error: 'Erro ao carregar transações' });
     }
 });
 
-// Endpoint CRUD: Atualizar transação
 app.put('/transactions/:id', async (req, res) => {
+    if (!db) return res.status(503).json({ error: 'Banco não disponível.' });
     try {
-        const id = req.params.id;
-        const transactionData = req.body;
-        await updateTransactionInDb(id, transactionData);
+        await db.updateTransactionInDb(req.params.id, req.body);
         res.json({ message: 'Transação atualizada!' });
     } catch (error) {
-        console.error('Erro PUT:', error);
-        res.status(500).json({ error: 'Erro ao atualizar transação', details: error.message });
+        res.status(500).json({ error: 'Erro ao atualizar', details: error.message });
     }
 });
 
-// Endpoint CRUD: Deletar transação
 app.delete('/transactions/:id', async (req, res) => {
+    if (!db) return res.status(503).json({ error: 'Banco não disponível.' });
     try {
-        const id = req.params.id;
-        await deleteTransactionFromDb(id);
+        await db.deleteTransactionFromDb(req.params.id);
         res.json({ message: 'Transação excluída!' });
     } catch (error) {
-        console.error('Erro DELETE:', error);
-        res.status(500).json({ error: 'Erro ao excluir transação', details: error.message });
+        res.status(500).json({ error: 'Erro ao excluir', details: error.message });
     }
 });
 
-// --- ENPOINTS FORNECEDORES (SUPPLIERS) --- //
+// ============================================================
+// ROTAS DE FORNECEDORES
+// ============================================================
 
-// GET: Listar Fornecedores
 app.get('/suppliers', async (req, res) => {
-    try {
-        const suppliers = await getSuppliers();
-        res.json(suppliers);
-    } catch (error) {
-        res.status(500).json({ error: 'Erro ao buscar fornecedores', details: error.message });
-    }
+    if (!db) return res.json([]);
+    try { res.json(await db.getSuppliers()); } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// POST: Criar Fornecedor
 app.post('/suppliers', async (req, res) => {
-    try {
-        const { nome, categoria } = req.body;
-        if (!nome || !categoria) return res.status(400).json({ error: 'Nome e categoria são obrigatórios' });
-        await addSupplier(nome, categoria);
-        res.status(201).json({ message: 'Fornecedor cadastrado com sucesso!' });
-    } catch (error) {
-        res.status(500).json({ error: 'Erro ao cadastrar fornecedor', details: error.message });
-    }
+    if (!db) return res.status(503).json({ error: 'Banco não disponível.' });
+    const { nome, categoria } = req.body;
+    if (!nome || !categoria) return res.status(400).json({ error: 'Nome e categoria são obrigatórios' });
+    try { await db.addSupplier(nome, categoria); res.status(201).json({ message: 'Fornecedor criado!' }); } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// PUT: Atualizar Fornecedor
 app.put('/suppliers/:id', async (req, res) => {
-    try {
-        const id = req.params.id;
-        const { nome, categoria } = req.body;
-        await updateSupplier(id, nome, categoria);
-        res.json({ message: 'Fornecedor atualizado!' });
-    } catch (error) {
-        res.status(500).json({ error: 'Erro ao atualizar fornecedor', details: error.message });
-    }
+    if (!db) return res.status(503).json({ error: 'Banco não disponível.' });
+    const { nome, categoria } = req.body;
+    try { await db.updateSupplier(req.params.id, nome, categoria); res.json({ message: 'Fornecedor atualizado!' }); } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// DELETE: Excluir Fornecedor
 app.delete('/suppliers/:id', async (req, res) => {
-    try {
-        const id = req.params.id;
-        await deleteSupplierFromDb(id);
-        res.json({ message: 'Fornecedor excluído!' });
-    } catch (error) {
-        res.status(500).json({ error: 'Erro ao excluir fornecedor', details: error.message });
-    }
+    if (!db) return res.status(503).json({ error: 'Banco não disponível.' });
+    try { await db.deleteSupplierFromDb(req.params.id); res.json({ message: 'Fornecedor excluído!' }); } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// --- ENDPOINTS DE CONFIGURAÇÕES (SETTINGS) --- //
+// ============================================================
+// ROTAS DE CONFIGURAÇÕES
+// ============================================================
 
-// GET: Buscar todas as configurações
 app.get('/settings', async (req, res) => {
-    try {
-        const settings = await getSettings();
-        res.json(settings);
-    } catch (error) {
-        res.status(500).json({ error: 'Erro ao buscar configurações' });
-    }
+    if (!db) return res.json([]);
+    try { res.json(await db.getSettings()); } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// POST: Atualizar uma configuração específica
 app.post('/settings', async (req, res) => {
-    try {
-        const { key, value } = req.body;
-        if (!key) return res.status(400).json({ error: 'Chave é obrigatória' });
-        await updateSetting(key, value);
-        res.json({ message: `Configuração ${key} atualizada!` });
-    } catch (error) {
-        console.error('ERRO SETTINGS POST:', error.message);
-        res.status(500).json({ error: 'Erro ao atualizar configuração', details: error.message });
-    }
+    if (!db) return res.status(503).json({ error: 'Banco não disponível.' });
+    const { key, value } = req.body;
+    if (!key) return res.status(400).json({ error: 'Chave é obrigatória' });
+    try { await db.updateSetting(key, value); res.json({ message: `Configuração ${key} atualizada!` }); }
+    catch (e) { res.status(500).json({ error: 'Erro ao salvar', details: e.message }); }
 });
 
-// --- ENDPOINTS DE LOGS DA IA --- //
+// ============================================================
+// ROTAS DE LOGS DA IA
+// ============================================================
 
 app.get('/ai-logs', (req, res) => {
     const logPath = path.join(__dirname, 'gemini_debug.log');
-    if (!fs.existsSync(logPath)) {
-        return res.json({ logs: "Nenhum log disponível ainda." });
-    }
+    if (!fs.existsSync(logPath)) return res.json({ logs: 'Nenhum log.' });
     try {
         const content = fs.readFileSync(logPath, 'utf8');
-        // Retorna as últimas 100 linhas para não sobrecarregar
-        const lines = content.split('\n').slice(-100).join('\n');
-        res.json({ logs: lines });
-    } catch (error) {
-        res.status(500).json({ error: 'Erro ao ler logs' });
-    }
+        res.json({ logs: content.split('\n').slice(-100).join('\n') });
+    } catch (e) { res.status(500).json({ error: 'Erro ao ler logs' }); }
 });
 
 app.delete('/ai-logs', (req, res) => {
     const logPath = path.join(__dirname, 'gemini_debug.log');
-    try {
-        if (fs.existsSync(logPath)) {
-            fs.writeFileSync(logPath, '');
-        }
-        res.json({ message: 'Logs limpos com sucesso!' });
-    } catch (error) {
-        res.status(500).json({ error: 'Erro ao limpar logs' });
-    }
+    try { fs.writeFileSync(logPath, ''); res.json({ message: 'Logs limpos!' }); }
+    catch (e) { res.status(500).json({ error: 'Erro ao limpar logs' }); }
 });
 
-// --- ENDPOINTS DE PERFIS DE BANCO --- //
+// ============================================================
+// ROTAS DE PERFIS DE BANCO
+// ============================================================
 
 app.get('/bank-profiles', async (req, res) => {
-    try {
-        console.log('--- Requisição recebida em GET /bank-profiles ---');
-        const profiles = await getBankProfiles();
-        res.json(profiles);
-    } catch (error) {
-        res.status(500).json({ error: 'Erro ao buscar perfis de banco', details: error.message });
-    }
+    if (!db) return res.json([]);
+    try { res.json(await db.getBankProfiles()); } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.post('/bank-profiles', async (req, res) => {
-    try {
-        const { nome, identificador, palavras_ignorar, cartao_final } = req.body;
-        if (!nome || !identificador) return res.status(400).json({ error: 'Nome e identificador são obrigatórios' });
-        await addBankProfile(nome, identificador, palavras_ignorar || '', cartao_final || '');
-        res.status(201).json({ message: 'Perfil de banco criado!' });
-    } catch (error) {
-        res.status(500).json({ error: 'Erro ao criar perfil', details: error.message });
-    }
+    if (!db) return res.status(503).json({ error: 'Banco não disponível.' });
+    const { nome, identificador, palavras_ignorar, cartao_final } = req.body;
+    if (!nome || !identificador) return res.status(400).json({ error: 'Nome e identificador são obrigatórios' });
+    try { await db.addBankProfile(nome, identificador, palavras_ignorar || '', cartao_final || ''); res.status(201).json({ message: 'Perfil criado!' }); }
+    catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.put('/bank-profiles/:id', async (req, res) => {
-    try {
-        const { nome, identificador, palavras_ignorar, cartao_final } = req.body;
-        await updateBankProfile(req.params.id, nome, identificador, palavras_ignorar || '', cartao_final || '');
-        res.json({ message: 'Perfil de banco atualizado!' });
-    } catch (error) {
-        res.status(500).json({ error: 'Erro ao atualizar perfil', details: error.message });
-    }
+    if (!db) return res.status(503).json({ error: 'Banco não disponível.' });
+    const { nome, identificador, palavras_ignorar, cartao_final } = req.body;
+    try { await db.updateBankProfile(req.params.id, nome, identificador, palavras_ignorar || '', cartao_final || ''); res.json({ message: 'Perfil atualizado!' }); }
+    catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.delete('/bank-profiles/:id', async (req, res) => {
-    try {
-        await deleteBankProfile(req.params.id);
-        res.json({ message: 'Perfil excluído!' });
-    } catch (error) {
-        res.status(500).json({ error: 'Erro ao excluir perfil', details: error.message });
-    }
+    if (!db) return res.status(503).json({ error: 'Banco não disponível.' });
+    try { await db.deleteBankProfile(req.params.id); res.json({ message: 'Perfil excluído!' }); }
+    catch (e) { res.status(500).json({ error: e.message }); }
 });
-
-
