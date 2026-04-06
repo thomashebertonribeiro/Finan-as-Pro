@@ -17,8 +17,9 @@ const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3002').replac
 console.log('🌐 [DEBUG] API_URL configurada:', API_URL);
 
 const DEFAULT_CATEGORIES = [
-  "Investimentos", "Alimentação", "Transporte", "Saúde", "Lazer",
-  "Educação", "Moradia", "Seguros", "Outros"
+  "Casa", "Saúde", "Trabalho", "Entretenimento", "Alimentação",
+  "Beleza", "Roupas", "Educação", "Investimento", "Impostos",
+  "Deslocamento", "Carro", "Outros"
 ];
 
 const PAY_METHODS = ["Crédito", "Débito", "Pix", "Boleto", "Dinheiro"];
@@ -114,7 +115,18 @@ const App = () => {
       setSession(session);
     });
 
-    return () => subscription.unsubscribe();
+    const interceptorId = axios.interceptors.request.use(async (config) => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        config.headers.Authorization = `Bearer ${session.access_token}`;
+      }
+      return config;
+    });
+
+    return () => {
+      subscription.unsubscribe();
+      axios.interceptors.request.eject(interceptorId);
+    };
   }, []);
 
   const [manualFormData, setManualFormData] = useState({
@@ -213,11 +225,16 @@ const App = () => {
 
       const newEntry = { ...manualFormData, 'Valor (R$)': valor };
       
-      await axios.post(`${API_URL}/save-transactions`, {
+      const resp = await axios.post(`${API_URL}/save-transactions`, {
         transactions: [newEntry]
       });
-
-      showToast("Lançamento salvo com sucesso!");
+      const newSuppliers = resp.data.newSuppliers || [];
+      if (newSuppliers.length > 0) {
+        showToast(`✅ Salvo! Fornecedor "${newSuppliers[0].nome}" cadastrado automaticamente.`);
+        fetchSuppliers();
+      } else {
+        showToast("Lançamento salvo com sucesso!");
+      }
       setIsUploading(false);
       setModalView('select');
       
@@ -503,10 +520,16 @@ const App = () => {
     setStatus('Salvando no banco de dados...');
 
     try {
-      await axios.post(`${API_URL}/save-transactions`, {
+      const resp = await axios.post(`${API_URL}/save-transactions`, {
         transactions: pendingTransactions
       });
-      showToast('Banco de dados atualizado com sucesso!');
+      const newSuppliers = resp.data.newSuppliers || [];
+      if (newSuppliers.length > 0) {
+        showToast(`✅ Salvo! ${newSuppliers.length} novo(s) fornecedor(es) cadastrado(s): ${newSuppliers.map(s => s.nome).join(', ')}`, 'success');
+        fetchSuppliers();
+      } else {
+        showToast('Banco de dados atualizado com sucesso!');
+      }
       setPendingTransactions([]);
       fetchStats();
       fetchAllTransactions();
@@ -693,14 +716,6 @@ const App = () => {
             <span className="material-symbols-outlined">account_balance</span>
             <span>Bancos</span>
           </button>
-
-          <button 
-            className={`nav-link ${activeTab === 'ai' ? 'active' : ''}`}
-            onClick={() => setActiveTab('ai')}
-          >
-            <span className="material-symbols-outlined">smart_toy</span>
-            <span>Agente IA</span>
-          </button>
         </nav>
 
         <div className="nav-footer" style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -843,7 +858,6 @@ const App = () => {
                 {activeTab === 'transactions'  && 'Histórico de Lançamentos'}
                 {activeTab === 'suppliers'     && 'Gestão de Fornecedores'}
                 {activeTab === 'banks'         && 'Perfis Bancários'}
-                {activeTab === 'ai'            && 'Agente IA'}
                 {activeTab === 'settings'      && 'Configurações Globais'}
               </h2>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
@@ -851,7 +865,6 @@ const App = () => {
                 {activeTab === 'transactions' && 'Controle suas entradas e saídas'}
                 {activeTab === 'suppliers'    && 'Mapeie fornecedores para categorização automática'}
                 {activeTab === 'banks'        && 'Configure identificadores de cada conta bancária'}
-                {activeTab === 'ai'           && 'Gerencie comportamento e logs do processamento'}
                 {activeTab === 'settings'     && 'Gerencie conexões, APIs e preferências'}
               </p>
             </div>
@@ -1449,9 +1462,26 @@ const App = () => {
           <div className="glass-card">
             <div className="section-header" style={{ marginBottom: '1rem' }}>
               <p className="section-subtitle">{suppliers.length} fornecedor(es) cadastrado(s)</p>
-              <button className="btn-secondary" onClick={fetchSuppliers}>
-                <RefreshCw size={15} className={loading ? 'animate-spin' : ''} /> Atualizar
-              </button>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button className="btn-secondary" onClick={async () => {
+                  try {
+                    const resp = await axios.post(`${API_URL}/migrate-suppliers`);
+                    if (resp.data.newSuppliers?.length > 0) {
+                      showToast(`✅ ${resp.data.newSuppliers.length} fornecedor(es) importado(s) dos lançamentos antigos!`);
+                    } else {
+                      showToast('Nenhum fornecedor novo encontrado nos lançamentos antigos.', 'info');
+                    }
+                    fetchSuppliers();
+                  } catch (err) {
+                    showToast('Erro na importação', 'error');
+                  }
+                }}>
+                  <Bot size={15} /> Importar dos lançamentos
+                </button>
+                <button className="btn-secondary" onClick={fetchSuppliers}>
+                  <RefreshCw size={15} className={loading ? 'animate-spin' : ''} /> Atualizar
+                </button>
+              </div>
             </div>
             <div style={{ overflowX: 'auto' }}>
               <table className="modern-table">
@@ -1465,14 +1495,45 @@ const App = () => {
                 <tbody>
                   {suppliers.length > 0 ? suppliers.map((sup) => (
                     <tr key={sup.id}>
-                      <td style={{ fontWeight: '600' }}>{sup.nome}</td>
-                      <td><span className="badge badge-primary">{sup.categoria}</span></td>
-                      <td>
-                        <div style={{ display: 'flex', gap: '0.25rem', justifyContent: 'center' }}>
-                          <button className="action-btn primary" title="Editar" onClick={() => handleEditSupplierClick(sup)}><Tag size={15} /></button>
-                          <button className="action-btn danger" title="Excluir" onClick={() => handleDeleteSupplier(sup.id)}><Trash2 size={15} /></button>
-                        </div>
-                      </td>
+                      {editingSupplier?.id === sup.id ? (
+                        <>
+                          <td>
+                            <input
+                              className="glass-input"
+                              style={{ padding: '0.4rem 0.6rem', fontSize: '0.85rem', width: '100%' }}
+                              value={newSupplier.nome}
+                              onChange={(e) => setNewSupplier({ ...newSupplier, nome: e.target.value })}
+                            />
+                          </td>
+                          <td>
+                            <select
+                              className="glass-input"
+                              style={{ padding: '0.4rem 0.6rem', fontSize: '0.85rem', background: 'var(--bg-dark)' }}
+                              value={newSupplier.categoria}
+                              onChange={(e) => setNewSupplier({ ...newSupplier, categoria: e.target.value })}
+                            >
+                              {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                            </select>
+                          </td>
+                          <td>
+                            <div style={{ display: 'flex', gap: '0.25rem', justifyContent: 'center' }}>
+                              <button className="action-btn primary" title="Salvar" onClick={handleSaveSupplier}><CheckCircle size={15} /></button>
+                              <button className="action-btn" title="Cancelar" onClick={() => { setEditingSupplier(null); setNewSupplier({ nome: '', categoria: 'Outros' }); }} style={{ color: 'var(--text-muted)' }}><X size={15} /></button>
+                            </div>
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td style={{ fontWeight: '600' }}>{sup.nome}</td>
+                          <td><span className="badge badge-primary">{sup.categoria}</span></td>
+                          <td>
+                            <div style={{ display: 'flex', gap: '0.25rem', justifyContent: 'center' }}>
+                              <button className="action-btn primary" title="Editar" onClick={() => handleEditSupplierClick(sup)}><Tag size={15} /></button>
+                              <button className="action-btn danger" title="Excluir" onClick={() => handleDeleteSupplier(sup.id)}><Trash2 size={15} /></button>
+                            </div>
+                          </td>
+                        </>
+                      )}
                     </tr>
                   )) : (
                     <tr><td colSpan="3" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>Nenhum fornecedor cadastrado.</td></tr>
@@ -1745,13 +1806,17 @@ const App = () => {
                 <label style={{ fontSize: '0.85rem', fontWeight: '700', marginBottom: '0.5rem', display: 'block' }}>Prompt de Sistema (Personalizar Comportamento)</label>
                 <textarea 
                   className="glass-input" 
-                  style={{ width: '100%', minHeight: '120px', padding: '0.75rem', resize: 'vertical', fontSize: '0.85rem' }} 
+                  style={{ width: '100%', minHeight: '180px', padding: '0.75rem', resize: 'vertical', fontSize: '0.85rem', lineHeight: '1.6' }} 
+                  placeholder={`Defina como o agente deve se comportar. Exemplos:\n\n- Ignore comprovantes de agendamento e PIX de devolução.\n- Classifique automaticamente compras no iFood como "Alimentação".\n- Ao receber um resumo, destaque os 3 maiores gastos do mês.\n- Seja rigoroso com faturas do C6 Bank e ignore linhas de metadados.`}
                   value={geminiSystemPrompt} 
                   onChange={(e) => setGeminiSystemPrompt(e.target.value)} 
                 />
+                <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>
+                  💡 O agente também responde a comandos como "Gastei 50 no mercado", "Recebi 1000 de salário" e "Resumo do mês".
+                </p>
               </div>
               
-              <button className="btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={saveGeminiApiKey}>
+              <button className="btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={async () => { await saveGeminiApiKey(); await saveGeminiSystemPrompt(); }}>
                 <Shield size={18} />
                 Salvar Configurações de IA
               </button>
@@ -1762,6 +1827,71 @@ const App = () => {
                   <span>A chave API é armazenada localmente no servidor e nunca é compartilhada.</span>
                 </p>
               </div>
+            </div>
+          </div>
+
+          {/* Categorias Card */}
+          <div className="glass-card" style={{ padding: '2rem', marginTop: '2rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+              <div style={{ padding: '0.75rem', background: '#ede9fe', borderRadius: '0.75rem', color: '#6366f1' }}>
+                <Tag size={24} />
+              </div>
+              <div>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: '800' }}>Categorias</h3>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Gerencie as categorias disponíveis no sistema</p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem' }}>
+              <input
+                className="glass-input"
+                style={{ flex: 1, padding: '0.75rem' }}
+                placeholder="Nome da nova categoria..."
+                id="new-category-input"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const val = e.target.value.trim();
+                    if (val && !categories.includes(val)) {
+                      setCategories([...categories, val]);
+                      e.target.value = '';
+                      showToast(`Categoria "${val}" adicionada!`);
+                    }
+                  }
+                }}
+              />
+              <button className="btn-primary" onClick={() => {
+                const input = document.getElementById('new-category-input');
+                const val = input.value.trim();
+                if (!val) return showToast('Digite um nome para a categoria', 'error');
+                if (categories.includes(val)) return showToast('Categoria já existe', 'error');
+                setCategories([...categories, val]);
+                input.value = '';
+                showToast(`Categoria "${val}" adicionada!`);
+              }}>
+                <Plus size={16} /> Adicionar
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+              {categories.map((cat) => (
+                <div key={cat} style={{
+                  display: 'flex', alignItems: 'center', gap: '0.4rem',
+                  padding: '0.4rem 0.75rem', borderRadius: '2rem',
+                  background: 'var(--primary-bg)', border: '1px solid var(--glass-border)',
+                  fontSize: '0.85rem', fontWeight: '600', color: 'var(--primary)'
+                }}>
+                  {cat}
+                  {!['Casa','Saúde','Trabalho','Entretenimento','Alimentação','Beleza','Roupas','Educação','Investimento','Impostos','Deslocamento','Carro','Outros'].includes(cat) && (
+                    <button
+                      onClick={() => setCategories(categories.filter(c => c !== cat))}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--danger)', display: 'flex', padding: 0 }}
+                      title="Remover"
+                    >
+                      <X size={13} />
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </div>

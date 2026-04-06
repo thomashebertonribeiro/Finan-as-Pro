@@ -6,7 +6,7 @@ build/
 # Environment
 .env
 *.env
- 
+
 # Auth & Sessions
 baileys_auth_info/
 baileys_store.json
@@ -16,7 +16,17 @@ temp_wa_*.jpg
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*.log
+
+# Uploads & temp files
+server/uploads/
+server/database.sqlite
+server/last_ocr_debug.txt
+server/last_wa_ocr_debug.txt
 
 # System Files
 .DS_Store
 Thumbs.db
+
+# Pasta duplicada antiga
+Finan-as-Pro/

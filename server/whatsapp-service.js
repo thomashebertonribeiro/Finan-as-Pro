@@ -12,8 +12,8 @@ const path = require('path');
 const os = require('os');
 // const Tesseract = require('tesseract.js'); // Movido para dentro das funções
 const { parseFinancialData } = require('./utils');
-const { saveTransactionsToDb, getSuppliers, getSetting } = require('./database');
-const { processImageWithGemini } = require('./gemini-service');
+const { saveTransactionsToDb, getSuppliers, getSetting, getMonthlySummary } = require('./database');
+const { processImageWithGemini, processTextWithGemini } = require('./gemini-service');
 
 let sock;
 let qrCode = null;
@@ -46,7 +46,7 @@ async function connectToWhatsApp() {
             isLatest = versionResult.isLatest;
         } catch (e) {
             console.warn(`⚠️ [WHATSAPP] Não foi possível buscar versão online (${e.message}). Usando versão fixa.`);
-            version = [2, 3000, 1015901307];
+            version = [2, 3000, 1035194821];
             isLatest = false;
         }
 
@@ -226,7 +226,93 @@ async function connectToWhatsApp() {
 }
 
 async function handleTextMessage(sock, jid, text) {
-    const regex = /(gastei|recebi|investi)\s+(\d+(?:[.,]\d{2})?)\s+(?:no|na|em|com|de)?\s*(.*)/i;
+    const now = new Date();
+
+    // Tenta processar via Gemini primeiro (detecta intenção e mês pedido)
+    const geminiResult = await processTextWithGemini(text);
+
+    if (geminiResult) {
+        const { acao, mesPedido, transacao, mensagemResposta } = geminiResult;
+
+        if (acao === 'lancamento' && transacao) {
+            const suppliers = await getSuppliers();
+            let categoria = transacao.categoria || 'Outros';
+            const matchedSupplier = suppliers.find(s =>
+                transacao.descricao?.toLowerCase().includes(s.nome.toLowerCase())
+            );
+            if (matchedSupplier) categoria = matchedSupplier.categoria;
+
+            const transaction = {
+                'Data': now.toLocaleDateString('pt-BR'),
+                'Mês': now.toLocaleString('pt-BR', { month: 'long' }),
+                'Descrição': (transacao.descricao || 'Lançamento via WhatsApp').substring(0, 100),
+                'Tipo': transacao.tipo || 'Saída',
+                'Tipo de Pagamento': transacao.tipoPagamento || 'Pix',
+                'Parcela': '1/1',
+                'Banco/Cartão': 'WhatsApp',
+                'Categoria': categoria,
+                'Valor (R$)': transacao.valor || '0,00'
+            };
+
+            pendingConfirmations[jid] = [transaction];
+            const confirmMsg = mensagemResposta ||
+                `❓ *Deseja salvar este lançamento?*\n\n📝 *Item:* ${transaction['Descrição']}\n💰 *Valor:* R$ ${transaction['Valor (R$)']}\n📁 *Categoria:* ${transaction['Categoria']}\n\nResponda *"Sim"* para confirmar ou *"Não"* para cancelar.`;
+            await sock.sendMessage(jid, { text: confirmMsg });
+            return;
+        }
+
+        if (acao === 'resumo') {
+            // Determina o mês/ano a buscar
+            const targetYear  = mesPedido?.ano  || now.getFullYear();
+            const targetMonth = mesPedido?.mes   || (now.getMonth() + 1);
+            const summary = await getMonthlySummary(targetYear, targetMonth);
+
+            const fmt = (v) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const mesNome = new Date(targetYear, targetMonth - 1, 1).toLocaleString('pt-BR', { month: 'long' });
+
+            let msg = `📊 *Resumo de ${mesNome}/${targetYear}*\n\n`;
+            msg += `💰 *Entradas:* R$ ${fmt(summary.totalEntradas)}\n`;
+            msg += `💸 *Gastos:* R$ ${fmt(summary.totalSaidas)}\n`;
+            if (summary.totalInvestido > 0) msg += `📈 *Investido:* R$ ${fmt(summary.totalInvestido)}\n`;
+            msg += `🏦 *Saldo do mês:* R$ ${fmt(summary.totalEntradas - summary.totalSaidas - summary.totalInvestido)}\n`;
+
+            if (summary.topCards?.length > 0) {
+                msg += `\n💳 *Cartão/banco mais usado:* ${summary.topCards[0].banco} — R$ ${fmt(summary.topCards[0].total)}\n`;
+            }
+
+            if (summary.topCategories.length > 0) {
+                msg += `\n🏷️ *Categorias com mais lançamentos:*\n`;
+                summary.topCategories.forEach(([cat, count], i) => {
+                    msg += `  ${i + 1}. ${cat} (${count} lançamento${count > 1 ? 's' : ''})\n`;
+                });
+            }
+
+            if (summary.topInvestments?.length > 0) {
+                msg += `\n📈 *Investimentos:*\n`;
+                summary.topInvestments.forEach(inv => {
+                    msg += `  • ${inv.desc}: R$ ${fmt(inv.valor)}\n`;
+                });
+            }
+
+            if (summary.busyDay) {
+                msg += `\n📅 *Dia mais movimentado:* ${summary.busyDay.day}\n`;
+                msg += `  ↑ R$ ${fmt(summary.busyDay.entradas)} | ↓ R$ ${fmt(summary.busyDay.saidas)}`;
+            }
+
+            await sock.sendMessage(jid, { text: msg });
+            return;
+        }
+
+        if (acao === 'ajuda' || acao === 'outro') {
+            const msg = mensagemResposta ||
+                '🤖 Olá! Eu sou seu assistente financeiro.\n\nVocê pode me enviar:\n1. *Texto:* "Gastei 50 no mercado"\n2. *Imagem:* Print do comprovante\n3. *Resumo:* "Resumo de março" ou "Como foi janeiro?"\n\nEu registro tudo automaticamente! 🚀';
+            await sock.sendMessage(jid, { text: msg });
+            return;
+        }
+    }
+
+    // Fallback: regex simples se Gemini não estiver configurado
+    const regex = /(gastei|recebi|investi|paguei|comprei)\s+(\d+(?:[.,]\d{2})?)\s+(?:no|na|em|com|de|pelo|pela)?\s*(.*)/i;
     const match = text.match(regex);
 
     if (match) {
@@ -234,27 +320,17 @@ async function handleTextMessage(sock, jid, text) {
         const valor = match[2].replace(',', '.');
         let tipo = 'Saída';
         let categoria = 'Outros';
+        if (acao === 'recebi') tipo = 'Entrada';
+        if (acao === 'investi') categoria = 'Investimentos';
 
-        if (acao.includes('recebi')) tipo = 'Entrada';
-        if (acao.includes('investi')) {
-            tipo = 'Saída';
-            categoria = 'Investimentos';
-        }
-
-        const descricaoFinal = match[3] ? match[3].trim() : 'Lançamento via WhatsApp';
-
-        // Categorização Automática por Fornecedores
+        const descricaoFinal = match[3]?.trim() || 'Lançamento via WhatsApp';
         const suppliers = await getSuppliers();
-        const matchedSupplier = suppliers.find(sup => 
-            descricaoFinal.toLowerCase().includes(sup.nome.toLowerCase())
-        );
-        if (matchedSupplier && categoria === 'Outros') {
-            categoria = matchedSupplier.categoria;
-        }
+        const matchedSupplier = suppliers.find(s => descricaoFinal.toLowerCase().includes(s.nome.toLowerCase()));
+        if (matchedSupplier && categoria === 'Outros') categoria = matchedSupplier.categoria;
 
         const transaction = {
-            'Data': new Date().toLocaleDateString('pt-BR'),
-            'Mês': new Date().toLocaleString('pt-BR', { month: 'long' }),
+            'Data': now.toLocaleDateString('pt-BR'),
+            'Mês': now.toLocaleString('pt-BR', { month: 'long' }),
             'Descrição': descricaoFinal.substring(0, 100),
             'Tipo': tipo,
             'Tipo de Pagamento': 'Pix',
@@ -265,9 +341,9 @@ async function handleTextMessage(sock, jid, text) {
         };
 
         pendingConfirmations[jid] = [transaction];
-        await sock.sendMessage(jid, { text: `❓ *Deseja salvar este lançamento?*\n\n📝 *Item:* ${transaction.Descrição}\n💰 *Valor:* R$ ${transaction['Valor (R$)']}\n📁 *Categoria:* ${transaction.Categoria}\n\nResponda *"Sim"* para confirmar ou *"Não"* para cancelar.` });
+        await sock.sendMessage(jid, { text: `❓ *Deseja salvar este lançamento?*\n\n📝 *Item:* ${transaction['Descrição']}\n💰 *Valor:* R$ ${transaction['Valor (R$)']}\n📁 *Categoria:* ${transaction['Categoria']}\n\nResponda *"Sim"* para confirmar ou *"Não"* para cancelar.` });
     } else {
-        await sock.sendMessage(jid, { text: '🤖 Olá! Eu sou seu assistente financeiro.\n\nVocê pode me enviar:\n1. *Texto:* "Gastei 50 no mercado"\n2. *Imagem:* Print do comprovante\n\nEu registro tudo na sua planilha automaticamente! 🚀' });
+        await sock.sendMessage(jid, { text: '🤖 Olá! Eu sou seu assistente financeiro.\n\nVocê pode me enviar:\n1. *Texto:* "Gastei 50 no mercado"\n2. *Imagem:* Print do comprovante\n3. *Resumo:* "Resumo do mês"\n\nEu registro tudo automaticamente! 🚀' });
     }
 }
 
@@ -356,7 +432,7 @@ async function logoutWhatsApp() {
         sock = null;
     }
 
-    const authPath = path.join(process.cwd(), 'baileys_auth_info');
+    const authPath = path.join(os.tmpdir(), 'financas_pro_baileys_auth');
     if (fs.existsSync(authPath)) {
         try {
             fs.rmSync(authPath, { recursive: true, force: true });

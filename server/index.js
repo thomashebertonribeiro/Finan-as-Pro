@@ -18,6 +18,7 @@ process.on('SIGTERM', () => {
 // 2. Dependências Externas
 require('dotenv').config();
 const express = require('express');
+const authMiddleware = require('./authMiddleware');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
@@ -56,6 +57,8 @@ try {
     waService = require('./whatsapp-service');
     console.log('✅ [BOOT] Todos os módulos carregados.');
     db.initDatabase().catch(e => console.error('❌ [DB] Erro na inicialização:', e.message));
+    // Auto-conecta WhatsApp ao iniciar (mantém sessão entre reinicializações)
+    waService.connectToWhatsApp().catch(e => console.error('❌ [WHATSAPP] Erro ao auto-conectar:', e.message));
 } catch (err) {
     console.error('❌ [CRITICAL] Falha ao carregar módulos:', err.message);
     console.error(err.stack);
@@ -115,12 +118,12 @@ app.post('/whatsapp-logout', async (req, res) => {
 // ROTAS DE IMAGEM / PROCESSAMENTO
 // ============================================================
 
-app.post('/process-image', upload.array('images'), async (req, res) => {
+app.post('/process-image', authMiddleware, upload.array('images'), async (req, res) => {
     if (!db || !gemini) return res.status(503).json({ error: 'Serviço não disponível.' });
     if (!req.files || req.files.length === 0) return res.status(400).json({ error: 'Nenhuma imagem enviada.' });
 
     try {
-        const suppliers = await db.getSuppliers();
+        const suppliers = await db.getSuppliers(req.supabase, req.userId);
         let allTransactions = [];
         let fullRawText = '';
 
@@ -169,25 +172,27 @@ app.post('/process-image', upload.array('images'), async (req, res) => {
 // ROTAS DE TRANSAÇÕES
 // ============================================================
 
-app.post('/save-transactions', async (req, res) => {
+app.post('/save-transactions', authMiddleware, async (req, res) => {
     if (!db) return res.status(503).json({ error: 'Banco de dados não disponível.' });
     const { transactions } = req.body;
     if (!transactions || !Array.isArray(transactions) || transactions.length === 0) {
         return res.status(400).json({ error: 'Nenhuma transação para salvar.' });
     }
     try {
-        await db.saveTransactionsToDb(transactions);
-        res.json({ message: 'Dados salvos com sucesso!' });
+        const total = transactions.length;
+        const newSuppliers = await db.saveTransactionsToDb(req.supabase, req.userId, transactions);
+        const saved = total - (newSuppliers._skipped || 0);
+        res.json({ message: 'Dados salvos com sucesso!', newSuppliers: newSuppliers || [] });
     } catch (err) {
         res.status(500).json({ error: 'Erro ao salvar', details: err.message });
     }
 });
 
-app.get('/dashboard-stats', async (req, res) => {
+app.get('/dashboard-stats', authMiddleware, async (req, res) => {
     if (!db) return res.json({ total: '0,00', entradas: '0,00', saidas: '0,00', investido: '0,00', categoryList: [], chartData: [] });
     const { startDate, endDate } = req.query;
     try {
-        const rows = await db.getRows();
+        const rows = await db.getRows(req.supabase, req.userId);
         let totalEntradas = 0, totalSaidas = 0, totalInvestido = 0, globalTotal = 0;
         const monthlyData = {}, categoryData = {};
         const start = startDate ? new Date(startDate + 'T00:00:00') : null;
@@ -243,29 +248,29 @@ app.get('/dashboard-stats', async (req, res) => {
     }
 });
 
-app.get('/transactions', async (req, res) => {
+app.get('/transactions', authMiddleware, async (req, res) => {
     if (!db) return res.json([]);
     try {
-        res.json(await db.getRows());
+        res.json(await db.getRows(req.supabase, req.userId));
     } catch (error) {
         res.status(500).json({ error: 'Erro ao carregar transações' });
     }
 });
 
-app.put('/transactions/:id', async (req, res) => {
+app.put('/transactions/:id', authMiddleware, async (req, res) => {
     if (!db) return res.status(503).json({ error: 'Banco não disponível.' });
     try {
-        await db.updateTransactionInDb(req.params.id, req.body);
+        await db.updateTransactionInDb(req.supabase, req.userId, req.params.id, req.body);
         res.json({ message: 'Transação atualizada!' });
     } catch (error) {
         res.status(500).json({ error: 'Erro ao atualizar', details: error.message });
     }
 });
 
-app.delete('/transactions/:id', async (req, res) => {
+app.delete('/transactions/:id', authMiddleware, async (req, res) => {
     if (!db) return res.status(503).json({ error: 'Banco não disponível.' });
     try {
-        await db.deleteTransactionFromDb(req.params.id);
+        await db.deleteTransactionFromDb(req.supabase, req.userId, req.params.id);
         res.json({ message: 'Transação excluída!' });
     } catch (error) {
         res.status(500).json({ error: 'Erro ao excluir', details: error.message });
@@ -276,43 +281,43 @@ app.delete('/transactions/:id', async (req, res) => {
 // ROTAS DE FORNECEDORES
 // ============================================================
 
-app.get('/suppliers', async (req, res) => {
+app.get('/suppliers', authMiddleware, async (req, res) => {
     if (!db) return res.json([]);
-    try { res.json(await db.getSuppliers()); } catch (e) { res.status(500).json({ error: e.message }); }
+    try { res.json(await db.getSuppliers(req.supabase, req.userId)); } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.post('/suppliers', async (req, res) => {
+app.post('/suppliers', authMiddleware, async (req, res) => {
     if (!db) return res.status(503).json({ error: 'Banco não disponível.' });
     const { nome, categoria } = req.body;
     if (!nome || !categoria) return res.status(400).json({ error: 'Nome e categoria são obrigatórios' });
-    try { await db.addSupplier(nome, categoria); res.status(201).json({ message: 'Fornecedor criado!' }); } catch (e) { res.status(500).json({ error: e.message }); }
+    try { await db.addSupplier(req.supabase, req.userId, nome, categoria); res.status(201).json({ message: 'Fornecedor criado!' }); } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.put('/suppliers/:id', async (req, res) => {
+app.put('/suppliers/:id', authMiddleware, async (req, res) => {
     if (!db) return res.status(503).json({ error: 'Banco não disponível.' });
     const { nome, categoria } = req.body;
-    try { await db.updateSupplier(req.params.id, nome, categoria); res.json({ message: 'Fornecedor atualizado!' }); } catch (e) { res.status(500).json({ error: e.message }); }
+    try { await db.updateSupplier(req.supabase, req.userId, req.params.id, nome, categoria); res.json({ message: 'Fornecedor atualizado!' }); } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.delete('/suppliers/:id', async (req, res) => {
+app.delete('/suppliers/:id', authMiddleware, async (req, res) => {
     if (!db) return res.status(503).json({ error: 'Banco não disponível.' });
-    try { await db.deleteSupplierFromDb(req.params.id); res.json({ message: 'Fornecedor excluído!' }); } catch (e) { res.status(500).json({ error: e.message }); }
+    try { await db.deleteSupplierFromDb(req.supabase, req.userId, req.params.id); res.json({ message: 'Fornecedor excluído!' }); } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // ============================================================
 // ROTAS DE CONFIGURAÇÕES
 // ============================================================
 
-app.get('/settings', async (req, res) => {
+app.get('/settings', authMiddleware, async (req, res) => {
     if (!db) return res.json([]);
-    try { res.json(await db.getSettings()); } catch (e) { res.status(500).json({ error: e.message }); }
+    try { res.json(await db.getSettings(req.supabase, req.userId)); } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.post('/settings', async (req, res) => {
+app.post('/settings', authMiddleware, async (req, res) => {
     if (!db) return res.status(503).json({ error: 'Banco não disponível.' });
     const { key, value } = req.body;
     if (!key) return res.status(400).json({ error: 'Chave é obrigatória' });
-    try { await db.updateSetting(key, value); res.json({ message: `Configuração ${key} atualizada!` }); }
+    try { await db.updateSetting(req.supabase, req.userId, key, value); res.json({ message: `Configuração ${key} atualizada!` }); }
     catch (e) { res.status(500).json({ error: 'Erro ao salvar', details: e.message }); }
 });
 
@@ -339,28 +344,43 @@ app.delete('/ai-logs', (req, res) => {
 // ROTAS DE PERFIS DE BANCO
 // ============================================================
 
-app.get('/bank-profiles', async (req, res) => {
+app.get('/bank-profiles', authMiddleware, async (req, res) => {
     if (!db) return res.json([]);
-    try { res.json(await db.getBankProfiles()); } catch (e) { res.status(500).json({ error: e.message }); }
+    try { res.json(await db.getBankProfiles(req.supabase, req.userId)); } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.post('/bank-profiles', async (req, res) => {
+app.post('/bank-profiles', authMiddleware, async (req, res) => {
     if (!db) return res.status(503).json({ error: 'Banco não disponível.' });
     const { nome, identificador, palavras_ignorar, cartao_final } = req.body;
     if (!nome || !identificador) return res.status(400).json({ error: 'Nome e identificador são obrigatórios' });
-    try { await db.addBankProfile(nome, identificador, palavras_ignorar || '', cartao_final || ''); res.status(201).json({ message: 'Perfil criado!' }); }
+    try { await db.addBankProfile(req.supabase, req.userId, nome, identificador, palavras_ignorar || '', cartao_final || ''); res.status(201).json({ message: 'Perfil criado!' }); }
     catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.put('/bank-profiles/:id', async (req, res) => {
+app.put('/bank-profiles/:id', authMiddleware, async (req, res) => {
     if (!db) return res.status(503).json({ error: 'Banco não disponível.' });
     const { nome, identificador, palavras_ignorar, cartao_final } = req.body;
-    try { await db.updateBankProfile(req.params.id, nome, identificador, palavras_ignorar || '', cartao_final || ''); res.json({ message: 'Perfil atualizado!' }); }
+    try { await db.updateBankProfile(req.supabase, req.userId, req.params.id, nome, identificador, palavras_ignorar || '', cartao_final || ''); res.json({ message: 'Perfil atualizado!' }); }
     catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.delete('/bank-profiles/:id', async (req, res) => {
+app.delete('/bank-profiles/:id', authMiddleware, async (req, res) => {
     if (!db) return res.status(503).json({ error: 'Banco não disponível.' });
-    try { await db.deleteBankProfile(req.params.id); res.json({ message: 'Perfil excluído!' }); }
+    try { await db.deleteBankProfile(req.supabase, req.userId, req.params.id); res.json({ message: 'Perfil excluído!' }); }
     catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ============================================================
+// MIGRAÇÃO: Auto-cadastrar fornecedores dos lançamentos antigos
+// ============================================================
+
+app.post('/migrate-suppliers', authMiddleware, async (req, res) => {
+    if (!db) return res.status(503).json({ error: 'Banco não disponível.' });
+    try {
+        const transactions = await db.getRows(req.supabase, req.userId);
+        const newSuppliers = await db.autoRegisterSuppliers(req.supabase, req.userId, transactions);
+        res.json({ message: `Migração concluída! ${newSuppliers.length} fornecedor(es) cadastrado(s).`, newSuppliers });
+    } catch (err) {
+        res.status(500).json({ error: 'Erro na migração', details: err.message });
+    }
 });

@@ -186,4 +186,81 @@ async function processImageWithGemini(imagePath, mimeType) {
     }
 }
 
-module.exports = { processImageWithGemini };
+module.exports = { processImageWithGemini, processTextWithGemini };
+
+/**
+ * Processa uma mensagem de texto usando Gemini para interpretar intenção financeira.
+ * Retorna um objeto estruturado com a ação detectada.
+ */
+async function processTextWithGemini(text) {
+    try {
+        const apiKey = await getSetting('gemini_api_key');
+        if (!apiKey || !apiKey.trim()) return null;
+
+        const systemPrompt = await getSetting('gemini_system_prompt') || '';
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({
+            model: "gemini-2.5-flash",
+            generationConfig: { responseMimeType: "application/json" }
+        });
+
+        const today = new Date();
+        const fmt = (v) => `R$ ${v.toFixed(2).replace('.', ',')}`;
+        const summaryContext = '';
+
+        const prompt = `
+${systemPrompt}
+
+Você é um assistente financeiro pessoal via WhatsApp. Analise a mensagem do usuário e retorne um JSON com a ação correta.
+Data de hoje: ${today.toLocaleDateString('pt-BR')}
+Mês atual: ${today.toLocaleString('pt-BR', { month: 'long' })} (mês ${today.getMonth() + 1}/${today.getFullYear()})
+${summaryContext}
+
+AÇÕES POSSÍVEIS:
+1. "lancamento" — usuário quer registrar uma transação (gastei, paguei, recebi, investi, comprei, etc.)
+2. "resumo" — usuário quer ver relatório/resumo financeiro (pode ser de qualquer mês)
+3. "ajuda" — usuário não sabe o que fazer ou pediu ajuda
+4. "outro" — mensagem não relacionada a finanças
+
+FORMATO DE RESPOSTA JSON:
+{
+  "acao": "lancamento" | "resumo" | "ajuda" | "outro",
+  "mesPedido": null | { "mes": 1-12, "ano": 2024-2026 },
+  "transacao": {
+    "descricao": "string",
+    "valor": "0,00",
+    "tipo": "Saída" | "Entrada",
+    "categoria": "Alimentação" | "Transporte" | "Saúde" | "Lazer" | "Educação" | "Moradia" | "Seguros" | "Investimentos" | "Outros",
+    "tipoPagamento": "Pix" | "Crédito" | "Débito" | "Dinheiro" | "Boleto"
+  },
+  "mensagemResposta": "string (resposta amigável para o usuário, em português)"
+}
+
+REGRAS:
+- Se acao != "lancamento", o campo "transacao" pode ser null.
+- Se o usuário mencionar um mês específico (ex: "março", "janeiro", "fevereiro"), preencha "mesPedido" com o mês e ano corretos. Se não mencionar mês, use null (será usado o mês atual).
+- Para "resumo", NÃO gere a mensagemResposta com dados financeiros — deixe mensagemResposta como null. Os dados serão buscados pelo sistema com base no mesPedido.
+- Para "lancamento", extraia valor, descrição, tipo e categoria da mensagem.
+- Para "ajuda" ou "outro", gere uma mensagemResposta amigável com emojis.
+
+MENSAGEM DO USUÁRIO: "${text}"
+`;
+
+        const result = await model.generateContent(prompt);
+        const responseText = result.response.text().trim();
+
+        let parsed;
+        try {
+            parsed = JSON.parse(responseText);
+        } catch {
+            const match = responseText.match(/\{[\s\S]*\}/);
+            if (match) parsed = JSON.parse(match[0]);
+            else return null;
+        }
+
+        return parsed;
+    } catch (err) {
+        console.error('❌ [Gemini Text] Erro:', err.message);
+        return null;
+    }
+}

@@ -816,3 +816,276 @@ RAW:
     }
   ]
 }
+
+--- 2026-04-01T17:06:04.929Z ---
+BANCO: C6
+RAW:
+{
+  "banco": "C6",
+  "transacoes": [
+    {
+      "Data": "30/03/2026",
+      "Descricao": "TRADICAO MINEIRA",
+      "Valor": "13,89"
+    },
+    {
+      "Data": "28/03/2026",
+      "Descricao": "SUPERMERC CAMILO",
+      "Valor": "41,45"
+    },
+    {
+      "Data": "28/03/2026",
+      "Descricao": "ALVES SUPERMERCADOS",
+      "Valor": "103,92"
+    },
+    {
+      "Data": "28/03/2026",
+      "Descricao": "STUDIO THATI GUIMARAES",
+      "Valor": "40,00"
+    },
+    {
+      "Data": "28/03/2026",
+      "Descricao": "STEAK RANCH",
+      "Valor": "161,50"
+    }
+  ]
+}
+
+--- 2026-04-01T18:38:43.879Z ---
+BANCO: C6
+RAW:
+{
+  "banco": "C6",
+  "transacoes": [
+    {
+      "Data": "25/03/2026",
+      "Descricao": "NETFLIX.COM",
+      "Valor": "59,90"
+    },
+    {
+      "Data": "22/03/2026",
+      "Descricao": "GOOGLE ONE",
+      "Valor": "4,50"
+    },
+    {
+      "Data": "21/03/2026",
+      "Descricao": "CANTINHO DA MARMITA",
+      "Valor": "47,00"
+    },
+    {
+      "Data": "20/03/2026",
+      "Descricao": "PANIF LORRENZZETTI",
+      "Valor": "160,00"
+    },
+    {
+      "Data": "19/03/2026",
+      "Descricao": "AUTO POSTO MUFFATO LTD",
+      "Valor": "310,03"
+    },
+    {
+      "Data": "12/03/2026",
+      "Descricao": "DL*GOOGLE GOOGLE",
+      "Valor": "9,99"
+    },
+    {
+      "Data": "11/03/2026",
+      "Descricao": "PANIFICADORAE",
+      "Valor": "10,25"
+    }
+  ]
+}
+
+--- 2026-04-01T18:42:54.374Z ---
+BANCO: C6
+RAW:
+{
+  "banco": "C6",
+  "transacoes": [
+    {
+      "Data": "25/03/2026",
+      "Descricao": "NETFLIX.COM",
+      "Valor": "59,90"
+    },
+    {
+      "Data": "22/03/2026",
+      "Descricao": "GOOGLE ONE",
+      "Valor": "4,50"
+    },
+    {
+      "Data": "21/03/2026",
+      "Descricao": "CANTINHO DA MARMITA",
+      "Valor": "47,00"
+    },
+    {
+      "Data": "20/03/2026",
+      "Descricao": "PANIF LORRENZZETTI",
+      "Valor": "160,00"
+    },
+    {
+      "Data": "19/03/2026",
+      "Descricao": "AUTO POSTO MUFFATO LTD",
+      "Valor": "310,03"
+    },
+    {
+      "Data": "12/03/2026",
+      "Descricao": "DL*GOOGLE GOOGLE",
+      "Valor": "9,99"
+    },
+    {
+      "Data": "11/03/2026",
+      "Descricao": "PANIFICADORAE",
+      "Valor": "10,25"
+    }
+  ]
+}
+
+--- 2026-04-01T18:45:17.278Z ---
+BANCO: C6
+RAW:
+{
+  "banco": "C6",
+  "transacoes": [
+    {
+      "Data": "09/03/2026",
+      "Descricao": "FLEX ACADEMIA",
+      "Valor": "200,00"
+    },
+    {
+      "Data": "09/03/2026",
+      "Descricao": "MP *OLIVEIRAPROES",
+      "Valor": "35,00"
+    },
+    {
+      "Data": "09/03/2026",
+      "Descricao": "SHOPEE *USENUMMA",
+      "Valor": "10,41"
+    },
+    {
+      "Data": "08/03/2026",
+      "Descricao": "SHOPEE*A J MENEZES LTD",
+      "Valor": "40,39"
+    },
+    {
+      "Data": "08/03/2026",
+      "Descricao": "AUTO POSTO MUFFATO LTD",
+      "Valor": "255,14"
+    },
+    {
+      "Data": "08/03/2026",
+      "Descricao": "RESTAURANTE KHARINA",
+      "Valor": "359,17"
+    }
+  ]
+}
+
+--- 2026-04-01T18:45:52.528Z ---
+BANCO: C6
+RAW:
+{
+  "banco": "C6",
+  "transacoes": [
+    {
+      "Data": "07/03/2026",
+      "Descricao": "MERCADO MASTER ECONOM",
+      "Valor": "20,75"
+    },
+    {
+      "Data": "07/03/2026",
+      "Descricao": "SUPERMERCADO TONHAO",
+      "Valor": "28,77"
+    },
+    {
+      "Data": "07/03/2026",
+      "Descricao": "SUPERMERCADO TONHAO",
+      "Valor": "60,36"
+    },
+    {
+      "Data": "07/03/2026",
+      "Descricao": "CANTINHODAMARMITA",
+      "Valor": "47,00"
+    },
+    {
+      "Data": "07/03/2026",
+      "Descricao": "EPESMEL",
+      "Valor": "5,50"
+    },
+    {
+      "Data": "07/03/2026",
+      "Descricao": "EPESMEL",
+      "Valor": "15,00"
+    }
+  ]
+}
+
+--- 2026-04-01T18:46:23.066Z ---
+BANCO: C6
+RAW:
+{
+  "banco": "C6",
+  "transacoes": [
+    {
+      "Data": "28/02/2026",
+      "Descricao": "HAVAN MARINGA AV COLOM",
+      "Valor": "11,99"
+    },
+    {
+      "Data": "17/02/2026",
+      "Descricao": "MERCADOLIVRE*NUTRELIN",
+      "Valor": "12,58"
+    },
+    {
+      "Data": "10/02/2026",
+      "Descricao": "RS AMERICANO COMERCIO",
+      "Valor": "30,00"
+    },
+    {
+      "Data": "09/01/2026",
+      "Descricao": "LONDRI FREIOS",
+      "Valor": "311,66"
+    },
+    {
+      "Data": "08/01/2026",
+      "Descricao": "SHOPEE *FARMATUDOMAISB",
+      "Valor": "36,52"
+    },
+    {
+      "Data": "05/01/2026",
+      "Descricao": "SHOPEE *MAXIFERRAMENTA",
+      "Valor": "61,28"
+    }
+  ]
+}
+
+--- 2026-04-01T18:46:55.984Z ---
+BANCO: C6
+RAW:
+{
+  "banco": "C6",
+  "transacoes": [
+    {
+      "Data": "05/01/2026",
+      "Descricao": "MERCADOLIVRE EIBEXIM",
+      "Valor": "4,74"
+    },
+    {
+      "Data": "05/01/2026",
+      "Descricao": "MERCADOLIVRE MERCADOL",
+      "Valor": "4,98"
+    },
+    {
+      "Data": "18/12/2026",
+      "Descricao": "ROYAL COMERCIO DE CALC",
+      "Valor": "10,99"
+    },
+    {
+      "Data": "25/09/2026",
+      "Descricao": "MERCADOLIVRE MERCADOL",
+      "Valor": "148,25"
+    },
+    {
+      "Data": "02/03/2026",
+      "Descricao": "AUTO POSTO JARDINS LT",
+      "Valor": "70,00"
+    }
+  ]
+}
