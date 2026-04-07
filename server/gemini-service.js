@@ -221,11 +221,16 @@ Você é um assistente de agenda pessoal. Analise a mensagem do usuário e retor
 Data e hora atual (ISO 8601): ${contextDate}
 
 INTENÇÕES POSSÍVEIS:
-- "criar": usuário quer agendar/marcar/criar um compromisso
+- "criar": usuário quer agendar/marcar/criar um COMPROMISSO (reunião, consulta, evento, tarefa com data/hora). APENAS classifique como "criar" se a mensagem mencionar explicitamente uma data, hora ou período futuro E se tratar de um evento/compromisso (não de compras, gastos ou transações financeiras).
 - "consultar": usuário quer ver/listar compromissos de um período
 - "editar": usuário quer alterar/modificar um compromisso existente
 - "cancelar": usuário quer cancelar/remover um compromisso existente
-- "outro": mensagem não relacionada a agenda
+- "outro": mensagem não relacionada a agenda, incluindo compras, gastos, receitas, pagamentos, transferências ou qualquer transação financeira
+
+REGRAS IMPORTANTES:
+- Mensagens sobre compras, gastos, pagamentos, transferências ou finanças = SEMPRE "outro"
+- Mensagens sem data/hora específica = SEMPRE "outro"
+- Apenas agende se for claramente um evento/compromisso com data/hora
 
 FORMATO DE RESPOSTA JSON:
 
