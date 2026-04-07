@@ -3,6 +3,7 @@ const { createClient } = require('@supabase/supabase-js');
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
     console.error('❌ ERRO CRÍTICO: Variáveis de ambiente SUPABASE_URL ou SUPABASE_ANON_KEY não encontradas!');
@@ -13,6 +14,11 @@ if (!supabaseUrl || !supabaseKey) {
 const supabaseGlobal = (supabaseUrl && supabaseKey)
     ? createClient(supabaseUrl, supabaseKey)
     : null;
+
+// Cliente com service role para operações que precisam bypass do RLS (ex: resolveUserIdByPhone)
+const supabaseAdmin = (supabaseUrl && supabaseServiceKey)
+    ? createClient(supabaseUrl, supabaseServiceKey)
+    : supabaseGlobal; // fallback para global se não tiver service key
 
 // ─────────────────────────────────────────────
 // init: seed default bank profiles if empty
@@ -364,6 +370,7 @@ async function getMonthlySummary(supabase, userId, year, month) {
 
 module.exports = {
     supabaseGlobal,
+    supabaseAdmin,
     initDatabase,
     getRows,
     getMonthlySummary,

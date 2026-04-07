@@ -12,7 +12,7 @@ const path = require('path');
 const os = require('os');
 // const Tesseract = require('tesseract.js'); // Movido para dentro das funções
 const { parseFinancialData } = require('./utils');
-const { saveTransactionsToDb, getSuppliers, getSetting, getMonthlySummary } = require('./database');
+const { saveTransactionsToDb, getSuppliers, getSetting, getMonthlySummary, supabaseGlobal, supabaseAdmin } = require('./database');
 const { processImageWithGemini, processTextWithGemini, processAppointmentMessage } = require('./gemini-service');
 const appointmentService = require('./appointment-service');
 const { createClient } = require('@supabase/supabase-js');
@@ -132,7 +132,7 @@ async function connectToWhatsApp() {
 
                 // --- FILTRO DE SEGURANÇA ---
                 // Resolve userId pelo número de telefone (usado em todas as queries ao banco)
-                const waUserId = await appointmentService.resolveUserIdByPhone(supabaseGlobal, remoteJid);
+                const waUserId = await appointmentService.resolveUserIdByPhone(supabaseAdmin, remoteJid);
 
                 // 0. Processar mensagens enviadas para OUTROS somente se habilitado
                 if (fromMe) {
@@ -488,10 +488,10 @@ async function handleTextMessage(sock, jid, text, userId) {
     // --- ROTEAMENTO DE AGENDA (antes do fluxo financeiro) ---
     const appointmentResult = await processAppointmentMessage(text, now.toISOString());
     if (appointmentResult && appointmentResult.intent && appointmentResult.intent !== 'outro') {
-        if (!supabaseGlobal) {
-            console.warn('⚠️ [Agenda] supabaseGlobal não disponível. Continuando para fluxo financeiro.');
+        if (!supabaseAdmin) {
+            console.warn('⚠️ [Agenda] supabaseAdmin não disponível. Continuando para fluxo financeiro.');
         } else {
-            const userId = await appointmentService.resolveUserIdByPhone(supabaseGlobal, jid);
+            const userId = await appointmentService.resolveUserIdByPhone(supabaseAdmin, jid);
             if (!userId) {
                 console.warn(`⚠️ [Agenda] Número ${jid} não mapeado a nenhum user_id. Continuando para fluxo financeiro.`);
             } else {
