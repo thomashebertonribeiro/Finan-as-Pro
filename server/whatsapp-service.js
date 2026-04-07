@@ -131,6 +131,9 @@ async function connectToWhatsApp() {
                 }
 
                 // --- FILTRO DE SEGURANÇA ---
+                // Resolve userId pelo número de telefone (usado em todas as queries ao banco)
+                const waUserId = await appointmentService.resolveUserIdByPhone(supabaseGlobal, remoteJid);
+
                 // 0. Processar mensagens enviadas para OUTROS somente se habilitado
                 if (fromMe) {
                     if (!botId) {
@@ -139,7 +142,7 @@ async function connectToWhatsApp() {
                     }
                     console.log(`DEBUG: fromMe=${fromMe}, isSelfChat=${isSelfChat}, botNum=${botNum}, recipient=${remoteNum}, jid=${remoteJid}, botLid=${botLid}`);
                     
-                    const processOutgoing = await getSetting('process_outgoing_messages');
+                    const processOutgoing = waUserId ? await getSetting(supabaseGlobal, waUserId, 'process_outgoing_messages') : null;
                     if (!isSelfChat && processOutgoing !== 'true') {
                          console.log(`⚠️ Mensagem para terceiros (${remoteJid}) ignorada por precaução (configuração desativada).`);
                          continue;
@@ -150,7 +153,7 @@ async function connectToWhatsApp() {
                 if (remoteJid.endsWith('@g.us') || remoteJid.includes('@broadcast') || remoteJid === 'status@broadcast') continue;
 
                 // 2. Verificar Número Autorizado
-                const authorizedSetting = await getSetting('whatsapp_authorized_number');
+                const authorizedSetting = waUserId ? await getSetting(supabaseGlobal, waUserId, 'whatsapp_authorized_number') : null;
                 const senderNumber = remoteNum;
 
                 console.log(`--- Checagem de Segurança: Remetente=${senderNumber}, Autorizado=${authorizedSetting} ---`);
@@ -256,7 +259,9 @@ async function connectToWhatsApp() {
                     if (!pending.type) {
                         if (['sim', 's', 'ok', 'confirmar', 'pode', 'bora'].includes(response)) {
                             const data = pendingConfirmations[remoteJid];
-                            await saveTransactionsToDb(data);
+                            if (waUserId) {
+                                await saveTransactionsToDb(supabaseGlobal, waUserId, data);
+                            }
                             await sock.sendMessage(remoteJid, { text: `✅ *${data.length} transações salvas no banco de dados!*` });
                             delete pendingConfirmations[remoteJid];
                             continue;
@@ -270,9 +275,9 @@ async function connectToWhatsApp() {
 
                 try {
                     if (messageType === 'conversation' || messageType === 'extendedTextMessage') {
-                        await handleTextMessage(sock, remoteJid, textMsg);
+                        await handleTextMessage(sock, remoteJid, textMsg, waUserId);
                     } else if (messageType === 'imageMessage') {
-                        await handleImageMessage(sock, remoteJid, msgContent.imageMessage);
+                        await handleImageMessage(sock, remoteJid, msgContent.imageMessage, waUserId);
                     }
                 } catch (err) {
                     console.error('Erro ao processar mensagem WA:', err);
@@ -477,7 +482,7 @@ async function handleAppointmentIntent(sock, jid, userId, supabase, intent, dado
     }
 }
 
-async function handleTextMessage(sock, jid, text) {
+async function handleTextMessage(sock, jid, text, userId) {
     const now = new Date();
 
     // --- ROTEAMENTO DE AGENDA (antes do fluxo financeiro) ---
@@ -505,7 +510,7 @@ async function handleTextMessage(sock, jid, text) {
         const { acao, mesPedido, transacao, mensagemResposta } = geminiResult;
 
         if (acao === 'lancamento' && transacao) {
-            const suppliers = await getSuppliers();
+            const suppliers = userId ? await getSuppliers(supabaseGlobal, userId) : [];
             let categoria = transacao.categoria || 'Outros';
             const matchedSupplier = suppliers.find(s =>
                 transacao.descricao?.toLowerCase().includes(s.nome.toLowerCase())
@@ -535,7 +540,9 @@ async function handleTextMessage(sock, jid, text) {
             // Determina o mês/ano a buscar
             const targetYear  = mesPedido?.ano  || now.getFullYear();
             const targetMonth = mesPedido?.mes   || (now.getMonth() + 1);
-            const summary = await getMonthlySummary(targetYear, targetMonth);
+            const summary = userId
+                ? await getMonthlySummary(supabaseGlobal, userId, targetYear, targetMonth)
+                : { totalEntradas: 0, totalSaidas: 0, totalInvestido: 0, topCategories: [], topCards: [], topInvestments: [], busyDay: null };
 
             const fmt = (v) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             const mesNome = new Date(targetYear, targetMonth - 1, 1).toLocaleString('pt-BR', { month: 'long' });
@@ -594,7 +601,7 @@ async function handleTextMessage(sock, jid, text) {
         if (acao === 'investi') categoria = 'Investimentos';
 
         const descricaoFinal = match[3]?.trim() || 'Lançamento via WhatsApp';
-        const suppliers = await getSuppliers();
+        const suppliers = userId ? await getSuppliers(supabaseGlobal, userId) : [];
         const matchedSupplier = suppliers.find(s => descricaoFinal.toLowerCase().includes(s.nome.toLowerCase()));
         if (matchedSupplier && categoria === 'Outros') categoria = matchedSupplier.categoria;
 
@@ -617,7 +624,7 @@ async function handleTextMessage(sock, jid, text) {
     }
 }
 
-async function handleImageMessage(sock, jid, imageMessage) {
+async function handleImageMessage(sock, jid, imageMessage, userId) {
     await sock.sendMessage(jid, { text: '🤖 *Lendo comprovante com IA...* Aguarde um momento.' });
 
     const stream = await downloadContentFromMessage(imageMessage, 'image');
@@ -630,7 +637,7 @@ async function handleImageMessage(sock, jid, imageMessage) {
     fs.writeFileSync(tempPath, buffer);
 
     try {
-        const suppliers = await getSuppliers();
+        const suppliers = userId ? await getSuppliers(supabaseGlobal, userId) : [];
         let transactions = null;
 
         // --- Passo 1: Tenta Gemini IA ---
