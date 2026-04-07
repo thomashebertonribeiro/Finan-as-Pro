@@ -101,6 +101,16 @@ const App = () => {
   const [editingBankProfile, setEditingBankProfile] = useState(null);
   const [newBankProfile, setNewBankProfile] = useState({ nome: '', identificador: '', palavras_ignorar: '', cartao_final: '' });
 
+  // Agenda State
+  const [appointments, setAppointments] = useState([]);
+  const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth()); // 0-11
+  const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
+  const [selectedDay, setSelectedDay] = useState(null); // 'YYYY-MM-DD' ou null
+  const [showAppointmentModal, setShowAppointmentModal] = useState(false);
+  const [appointmentForm, setAppointmentForm] = useState({
+    titulo: '', data: '', hora: '09:00', descricao: '', lembrete_minutos: 15, recorrencia: 'unica'
+  });
+
   // Auth State
   const [session, setSession] = useState(null);
 
@@ -210,6 +220,12 @@ const App = () => {
     }
   }, [activeTab]);
 
+  useEffect(() => {
+    if (activeTab === 'agenda') {
+      loadCalendarMonth(calendarYear, calendarMonth);
+    }
+  }, [activeTab]);
+
   const handleManualFormSubmit = async (e) => {
     e.preventDefault();
     if (!manualFormData.Descrição || !manualFormData['Valor (R$)']) {
@@ -307,6 +323,53 @@ const App = () => {
     } catch (error) {
       console.error("Erro ao carregar perfis de banco:", error);
     }
+  };
+
+  const fetchAppointments = async (start, end) => {
+    try {
+      const params = {};
+      if (start) params.start = start;
+      if (end) params.end = end;
+      const resp = await axios.get(`${API_URL}/appointments`, { params });
+      setAppointments(resp.data);
+    } catch (err) { console.error('Erro ao buscar compromissos:', err); }
+  };
+
+  const handleCreateAppointment = async (e) => {
+    e.preventDefault();
+    if (!appointmentForm.titulo || !appointmentForm.data || !appointmentForm.hora) {
+      showToast('Preencha título, data e hora', 'error'); return;
+    }
+    try {
+      const data_hora = new Date(`${appointmentForm.data}T${appointmentForm.hora}:00`).toISOString();
+      await axios.post(`${API_URL}/appointments`, {
+        titulo: appointmentForm.titulo,
+        data_hora,
+        descricao: appointmentForm.descricao || null,
+        lembrete_minutos: Number(appointmentForm.lembrete_minutos),
+        recorrencia: appointmentForm.recorrencia
+      });
+      showToast('Compromisso criado!');
+      setShowAppointmentModal(false);
+      setAppointmentForm({ titulo: '', data: '', hora: '09:00', descricao: '', lembrete_minutos: 15, recorrencia: 'unica' });
+      loadCalendarMonth(calendarYear, calendarMonth);
+    } catch (err) { showToast('Erro ao criar compromisso', 'error'); }
+  };
+
+  const handleCancelAppointment = async (id, isRecorrente) => {
+    const cancelarSerie = isRecorrente && window.confirm('Cancelar toda a série recorrente? Clique OK para cancelar a série ou Cancelar para cancelar apenas este.');
+    if (!window.confirm('Confirmar cancelamento?')) return;
+    try {
+      await axios.delete(`${API_URL}/appointments/${id}?cancelar_serie=${cancelarSerie}`);
+      showToast('Compromisso cancelado!');
+      loadCalendarMonth(calendarYear, calendarMonth);
+    } catch (err) { showToast('Erro ao cancelar', 'error'); }
+  };
+
+  const loadCalendarMonth = (year, month) => {
+    const start = new Date(year, month, 1).toISOString();
+    const end = new Date(year, month + 1, 0, 23, 59, 59).toISOString();
+    fetchAppointments(start, end);
   };
 
   const fetchSettings = async () => {
@@ -453,6 +516,7 @@ const App = () => {
     fetchSettings();
     fetchBankProfiles();
     fetchWaStatus();
+    loadCalendarMonth(calendarYear, calendarMonth);
     
     // Polling global para capturar lançamentos externos (WhatsApp/IA)
     const interval = setInterval(async () => {
@@ -716,6 +780,14 @@ const App = () => {
             <span className="material-symbols-outlined">account_balance</span>
             <span>Bancos</span>
           </button>
+
+          <button 
+            className={`nav-link ${activeTab === 'agenda' ? 'active' : ''}`}
+            onClick={() => setActiveTab('agenda')}
+          >
+            <span className="material-symbols-outlined">calendar_month</span>
+            <span>Agenda</span>
+          </button>
         </nav>
 
         <div className="nav-footer" style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -858,6 +930,7 @@ const App = () => {
                 {activeTab === 'transactions'  && 'Histórico de Lançamentos'}
                 {activeTab === 'suppliers'     && 'Gestão de Fornecedores'}
                 {activeTab === 'banks'         && 'Perfis Bancários'}
+                {activeTab === 'agenda'        && 'Agenda'}
                 {activeTab === 'settings'      && 'Configurações Globais'}
               </h2>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
@@ -865,6 +938,7 @@ const App = () => {
                 {activeTab === 'transactions' && 'Controle suas entradas e saídas'}
                 {activeTab === 'suppliers'    && 'Mapeie fornecedores para categorização automática'}
                 {activeTab === 'banks'        && 'Configure identificadores de cada conta bancária'}
+                {activeTab === 'agenda'       && 'Gerencie seus compromissos e eventos'}
                 {activeTab === 'settings'     && 'Gerencie conexões, APIs e preferências'}
               </p>
             </div>
@@ -1667,6 +1741,209 @@ const App = () => {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {activeTab === 'agenda' && (
+        <div className="page-section">
+          {/* Calendário Mensal */}
+          <div className="glass-card" style={{ marginBottom: '1.5rem' }}>
+            {/* Header do calendário */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <button className="btn-secondary" style={{ padding: '0.4rem 0.75rem' }}
+                onClick={() => {
+                  const d = new Date(calendarYear, calendarMonth - 1, 1);
+                  setCalendarMonth(d.getMonth());
+                  setCalendarYear(d.getFullYear());
+                  setSelectedDay(null);
+                  loadCalendarMonth(d.getFullYear(), d.getMonth());
+                }}>‹</button>
+              <h3 style={{ fontWeight: '800', fontSize: '1.1rem' }}>
+                {new Date(calendarYear, calendarMonth, 1).toLocaleString('pt-BR', { month: 'long', year: 'numeric' })}
+              </h3>
+              <button className="btn-secondary" style={{ padding: '0.4rem 0.75rem' }}
+                onClick={() => {
+                  const d = new Date(calendarYear, calendarMonth + 1, 1);
+                  setCalendarMonth(d.getMonth());
+                  setCalendarYear(d.getFullYear());
+                  setSelectedDay(null);
+                  loadCalendarMonth(d.getFullYear(), d.getMonth());
+                }}>›</button>
+            </div>
+
+            {/* Grid dias da semana */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', marginBottom: '4px' }}>
+              {['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map(d => (
+                <div key={d} style={{ textAlign: 'center', fontSize: '0.7rem', fontWeight: '700', color: 'var(--text-muted)', padding: '4px 0' }}>{d}</div>
+              ))}
+            </div>
+
+            {/* Grid dias do mês */}
+            {(() => {
+              const firstDay = new Date(calendarYear, calendarMonth, 1).getDay();
+              const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+              const today = new Date();
+              const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+              const cells = [];
+
+              // Células vazias antes do dia 1
+              for (let i = 0; i < firstDay; i++) {
+                cells.push(<div key={`empty-${i}`} />);
+              }
+
+              // Dias do mês
+              for (let day = 1; day <= daysInMonth; day++) {
+                const dayStr = `${calendarYear}-${String(calendarMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+                const hasAppts = appointments.some(a => a.data_hora.startsWith(dayStr));
+                const isToday = dayStr === todayStr;
+                const isSelected = dayStr === selectedDay;
+
+                cells.push(
+                  <div key={day}
+                    onClick={() => setSelectedDay(isSelected ? null : dayStr)}
+                    style={{
+                      textAlign: 'center', padding: '6px 2px', borderRadius: '0.5rem', cursor: 'pointer',
+                      background: isSelected ? 'var(--primary)' : isToday ? 'var(--primary-bg)' : 'transparent',
+                      color: isSelected ? 'white' : isToday ? 'var(--primary)' : 'var(--text-main)',
+                      fontWeight: isToday || isSelected ? '800' : '500',
+                      fontSize: '0.85rem', position: 'relative',
+                      border: isToday && !isSelected ? '1px solid var(--primary)' : '1px solid transparent',
+                      transition: 'all 0.15s'
+                    }}
+                  >
+                    {day}
+                    {hasAppts && (
+                      <div style={{
+                        width: 5, height: 5, borderRadius: '50%',
+                        background: isSelected ? 'white' : 'var(--primary)',
+                        margin: '2px auto 0'
+                      }} />
+                    )}
+                  </div>
+                );
+              }
+
+              return <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px' }}>{cells}</div>;
+            })()}
+          </div>
+
+          {/* Lista de compromissos */}
+          <div className="glass-card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ fontWeight: '800', fontSize: '1rem' }}>
+                {selectedDay
+                  ? `Compromissos — ${new Date(selectedDay + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })}`
+                  : 'Compromissos do mês'}
+              </h3>
+              <button className="btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
+                onClick={() => {
+                  setAppointmentForm(f => ({ ...f, data: selectedDay || '' }));
+                  setShowAppointmentModal(true);
+                }}>
+                <Plus size={15} /> Novo
+              </button>
+            </div>
+
+            {(() => {
+              const filtered = selectedDay
+                ? appointments.filter(a => a.data_hora.startsWith(selectedDay))
+                : appointments;
+
+              if (filtered.length === 0) {
+                return <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textAlign: 'center', padding: '2rem' }}>
+                  Nenhum compromisso {selectedDay ? 'neste dia' : 'neste mês'}.
+                </p>;
+              }
+
+              return filtered.map(appt => {
+                const hora = new Date(appt.data_hora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                const data = new Date(appt.data_hora).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+                return (
+                  <div key={appt.id} style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+                    padding: '0.75rem', borderRadius: '0.75rem', marginBottom: '0.5rem',
+                    background: 'var(--bg-main)', border: '1px solid var(--glass-border)'
+                  }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--primary)' }}>{data} {hora}</span>
+                        {appt.recorrencia !== 'unica' && (
+                          <span style={{ fontSize: '0.65rem', background: 'var(--primary-bg)', color: 'var(--primary)', padding: '1px 6px', borderRadius: '1rem', fontWeight: '700' }}>
+                            🔁 {appt.recorrencia}
+                          </span>
+                        )}
+                      </div>
+                      <p style={{ fontWeight: '700', fontSize: '0.9rem', margin: 0 }}>{appt.titulo}</p>
+                      {appt.descricao && <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '2px 0 0' }}>{appt.descricao}</p>}
+                    </div>
+                    <button
+                      onClick={() => handleCancelAppointment(appt.id, appt.recorrencia !== 'unica')}
+                      style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', padding: '4px' }}
+                      title="Cancelar"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                );
+              });
+            })()}
+          </div>
+
+          {/* Modal de criação */}
+          {showAppointmentModal && (
+            <div className="modal-overlay">
+              <div className="modal-content" style={{ maxWidth: '480px' }}>
+                <button onClick={() => setShowAppointmentModal(false)}
+                  style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
+                  <X size={22} />
+                </button>
+                <h2 style={{ fontSize: '1.4rem', fontWeight: '800', marginBottom: '1.5rem' }}>Novo Compromisso</h2>
+                <form onSubmit={handleCreateAppointment} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div className="form-group">
+                    <label>Título *</label>
+                    <input className="glass-input" required value={appointmentForm.titulo}
+                      onChange={e => setAppointmentForm(f => ({ ...f, titulo: e.target.value }))} placeholder="Ex: Reunião com cliente" />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="form-group">
+                      <label>Data *</label>
+                      <input type="date" className="glass-input" required value={appointmentForm.data}
+                        onChange={e => setAppointmentForm(f => ({ ...f, data: e.target.value }))} />
+                    </div>
+                    <div className="form-group">
+                      <label>Hora *</label>
+                      <input type="time" className="glass-input" required value={appointmentForm.hora}
+                        onChange={e => setAppointmentForm(f => ({ ...f, hora: e.target.value }))} />
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label>Descrição</label>
+                    <input className="glass-input" value={appointmentForm.descricao}
+                      onChange={e => setAppointmentForm(f => ({ ...f, descricao: e.target.value }))} placeholder="Opcional" />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="form-group">
+                      <label>Lembrete (minutos antes)</label>
+                      <input type="number" className="glass-input" min="0" value={appointmentForm.lembrete_minutos}
+                        onChange={e => setAppointmentForm(f => ({ ...f, lembrete_minutos: e.target.value }))} />
+                    </div>
+                    <div className="form-group">
+                      <label>Recorrência</label>
+                      <select className="glass-input" value={appointmentForm.recorrencia}
+                        onChange={e => setAppointmentForm(f => ({ ...f, recorrencia: e.target.value }))}>
+                        <option value="unica">Única</option>
+                        <option value="semanal">Semanal</option>
+                        <option value="mensal">Mensal</option>
+                      </select>
+                    </div>
+                  </div>
+                  <button type="submit" className="btn-primary" style={{ justifyContent: 'center', marginTop: '0.5rem' }}>
+                    <Plus size={16} /> Criar Compromisso
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

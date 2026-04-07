@@ -186,7 +186,116 @@ async function processImageWithGemini(imagePath, mimeType) {
     }
 }
 
-module.exports = { processImageWithGemini, processTextWithGemini };
+/**
+ * Processa uma mensagem de texto para interpretar intenções de agenda (compromissos).
+ * @param {string} text Mensagem do usuário.
+ * @param {string} contextDate Data atual em ISO 8601 para resolver datas relativas.
+ * @returns {Promise<object|null>} Objeto com intent e campos extraídos, ou null se falhar.
+ */
+async function processAppointmentMessage(text, contextDate) {
+    try {
+        const apiKey = await getSetting('gemini_api_key');
+        if (!apiKey || !apiKey.trim()) return null;
+
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({
+            model: "gemini-2.5-flash",
+            generationConfig: { responseMimeType: "application/json" }
+        });
+
+        const prompt = `
+Você é um assistente de agenda pessoal. Analise a mensagem do usuário e retorne um JSON classificando a intenção e extraindo os dados relevantes.
+
+Data e hora atual (ISO 8601): ${contextDate}
+
+INTENÇÕES POSSÍVEIS:
+- "criar": usuário quer agendar/marcar/criar um compromisso
+- "consultar": usuário quer ver/listar compromissos de um período
+- "editar": usuário quer alterar/modificar um compromisso existente
+- "cancelar": usuário quer cancelar/remover um compromisso existente
+- "outro": mensagem não relacionada a agenda
+
+FORMATO DE RESPOSTA JSON:
+
+Para intent "criar":
+{
+  "intent": "criar",
+  "titulo": "string (título do compromisso)",
+  "data_hora": "string (ISO 8601 com timezone, ex: 2025-07-15T14:00:00-03:00)",
+  "descricao": "string ou null",
+  "lembrete_minutos": number (padrão 15 se não mencionado),
+  "recorrencia": "unica" | "semanal" | "mensal"
+}
+
+Para intent "consultar":
+{
+  "intent": "consultar",
+  "periodo": {
+    "start": "string (ISO 8601)",
+    "end": "string (ISO 8601)"
+  }
+}
+
+Para intent "editar":
+{
+  "intent": "editar",
+  "alvo": {
+    "titulo": "string ou null",
+    "data_hora": "string (ISO 8601) ou null"
+  },
+  "campos_editar": {
+    "titulo": "string ou null",
+    "data_hora": "string (ISO 8601) ou null",
+    "descricao": "string ou null",
+    "lembrete_minutos": number ou null,
+    "recorrencia": "unica" | "semanal" | "mensal" ou null
+  }
+}
+
+Para intent "cancelar":
+{
+  "intent": "cancelar",
+  "alvo": {
+    "titulo": "string ou null",
+    "data_hora": "string (ISO 8601) ou null"
+  }
+}
+
+Para intent "outro":
+{
+  "intent": "outro"
+}
+
+REGRAS:
+- Resolva datas relativas ("amanhã", "próxima sexta", "semana que vem") com base na data atual fornecida.
+- Use o timezone -03:00 (Brasília) se não houver indicação de timezone.
+- Se o usuário não mencionar hora, use 09:00 como padrão.
+- Para "consultar" sem período específico, use o dia atual como start e end.
+- Para "consultar" um mês inteiro, use o primeiro e último dia do mês.
+- Recorrência padrão é "unica" se não mencionada.
+- Lembrete padrão é 15 minutos se não mencionado.
+
+MENSAGEM DO USUÁRIO: "${text}"
+`;
+
+        const result = await model.generateContent(prompt);
+        const responseText = result.response.text().trim();
+
+        let parsed;
+        try {
+            parsed = JSON.parse(responseText);
+        } catch {
+            const match = responseText.match(/\{[\s\S]*\}/);
+            if (match) parsed = JSON.parse(match[0]);
+            else return null;
+        }
+
+        return parsed;
+    } catch (err) {
+        console.error('❌ [Gemini Appointment] Erro:', err.message);
+        return null;
+    }
+}
 
 /**
  * Processa uma mensagem de texto usando Gemini para interpretar intenção financeira.

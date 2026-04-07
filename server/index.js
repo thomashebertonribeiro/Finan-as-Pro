@@ -60,6 +60,8 @@ let gemini = null;
 let utils = null;
 let waService = null;
 let multer = null;
+let appointmentService = null;
+let scheduler = null;
 
 try {
     multer = require('multer');
@@ -67,10 +69,13 @@ try {
     utils = require('./utils');
     gemini = require('./gemini-service');
     waService = require('./whatsapp-service');
+    appointmentService = require('./appointment-service');
     console.log('✅ [BOOT] Todos os módulos carregados.');
     db.initDatabase().catch(e => console.error('❌ [DB] Erro na inicialização:', e.message));
     // Auto-conecta WhatsApp ao iniciar (mantém sessão entre reinicializações)
     waService.connectToWhatsApp().catch(e => console.error('❌ [WHATSAPP] Erro ao auto-conectar:', e.message));
+    scheduler = require('./scheduler');
+    scheduler.startScheduler(db.supabaseGlobal, waService);
 } catch (err) {
     console.error('❌ [CRITICAL] Falha ao carregar módulos:', err.message);
     console.error(err.stack);
@@ -394,5 +399,63 @@ app.post('/migrate-suppliers', authMiddleware, async (req, res) => {
         res.json({ message: `Migração concluída! ${newSuppliers.length} fornecedor(es) cadastrado(s).`, newSuppliers });
     } catch (err) {
         res.status(500).json({ error: 'Erro na migração', details: err.message });
+    }
+});
+
+// ============================================================
+// ROTAS DE COMPROMISSOS (AGENDA)
+// ============================================================
+
+app.post('/appointments', authMiddleware, async (req, res) => {
+    if (!appointmentService) return res.status(503).json({ error: 'Serviço de agenda não disponível.' });
+    const { titulo, data_hora } = req.body;
+    if (!titulo || String(titulo).trim() === '') {
+        return res.status(400).json({ error: 'O campo título é obrigatório.' });
+    }
+    if (!data_hora) {
+        return res.status(400).json({ error: 'O campo data_hora é obrigatório.' });
+    }
+    try {
+        const appointments = await appointmentService.createAppointment(req.supabase, req.userId, req.body);
+        res.status(201).json(appointments);
+    } catch (err) {
+        if (err.message && (err.message.includes('obrigatório') || err.message.includes('ISO 8601'))) {
+            return res.status(400).json({ error: err.message });
+        }
+        res.status(500).json({ error: 'Erro ao criar compromisso', details: err.message });
+    }
+});
+
+app.get('/appointments', authMiddleware, async (req, res) => {
+    if (!appointmentService) return res.status(503).json({ error: 'Serviço de agenda não disponível.' });
+    try {
+        const appointments = await appointmentService.getAppointments(req.supabase, req.userId, {
+            start: req.query.start,
+            end: req.query.end,
+        });
+        res.status(200).json(appointments);
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao buscar compromissos', details: err.message });
+    }
+});
+
+app.put('/appointments/:id', authMiddleware, async (req, res) => {
+    if (!appointmentService) return res.status(503).json({ error: 'Serviço de agenda não disponível.' });
+    try {
+        const appointment = await appointmentService.updateAppointment(req.supabase, req.userId, req.params.id, req.body);
+        res.status(200).json(appointment);
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao atualizar compromisso', details: err.message });
+    }
+});
+
+app.delete('/appointments/:id', authMiddleware, async (req, res) => {
+    if (!appointmentService) return res.status(503).json({ error: 'Serviço de agenda não disponível.' });
+    const cancelarSerie = req.query.cancelar_serie === 'true';
+    try {
+        await appointmentService.cancelAppointment(req.supabase, req.userId, req.params.id, cancelarSerie);
+        res.status(200).json({ message: 'Compromisso cancelado com sucesso.' });
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao cancelar compromisso', details: err.message });
     }
 });

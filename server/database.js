@@ -363,6 +363,7 @@ async function getMonthlySummary(supabase, userId, year, month) {
 }
 
 module.exports = {
+    supabaseGlobal,
     initDatabase,
     getRows,
     getMonthlySummary,

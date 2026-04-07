@@ -13,7 +13,17 @@ const os = require('os');
 // const Tesseract = require('tesseract.js'); // Movido para dentro das funções
 const { parseFinancialData } = require('./utils');
 const { saveTransactionsToDb, getSuppliers, getSetting, getMonthlySummary } = require('./database');
-const { processImageWithGemini, processTextWithGemini } = require('./gemini-service');
+const { processImageWithGemini, processTextWithGemini, processAppointmentMessage } = require('./gemini-service');
+const appointmentService = require('./appointment-service');
+const { createClient } = require('@supabase/supabase-js');
+
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+
+// Cliente Supabase global para operações de agenda (resolução de userId, etc.)
+const supabaseGlobal = (SUPABASE_URL && SUPABASE_ANON_KEY)
+    ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : null;
 
 let sock;
 let qrCode = null;
@@ -193,16 +203,68 @@ async function connectToWhatsApp() {
                 // Verifica se há confirmação pendente
                 if (pendingConfirmations[remoteJid] && textMsg.length > 0) {
                     const response = textMsg.toLowerCase().trim();
-                    if (['sim', 's', 'ok', 'confirmar', 'pode', 'bora'].includes(response)) {
-                        const data = pendingConfirmations[remoteJid];
-                        await saveTransactionsToDb(data);
-                        await sock.sendMessage(remoteJid, { text: `✅ *${data.length} transações salvas no banco de dados!*` });
-                        delete pendingConfirmations[remoteJid];
-                        continue;
-                    } else if (['não', 'nao', 'n', 'cancelar', 'parar'].includes(response)) {
-                        await sock.sendMessage(remoteJid, { text: '❌ *Operação cancelada.* Nada foi salvo.' });
-                        delete pendingConfirmations[remoteJid];
-                        continue;
+
+                    // Confirmações de agenda (cancelar/editar)
+                    const pending = pendingConfirmations[remoteJid];
+                    if (pending && pending.type === 'cancelar_appointment') {
+                        if (['sim', 's', 'ok', 'confirmar'].includes(response)) {
+                            try {
+                                await appointmentService.cancelAppointment(pending.supabase, pending.userId, pending.appointmentId, false);
+                                await sock.sendMessage(remoteJid, { text: '✅ Compromisso cancelado com sucesso.' });
+                            } catch (e) {
+                                await sock.sendMessage(remoteJid, { text: '❌ Erro ao cancelar compromisso.' });
+                            }
+                            delete pendingConfirmations[remoteJid];
+                            continue;
+                        } else if (pending.isRecorrente && ['série', 'serie', 'todos', 'todas'].includes(response)) {
+                            try {
+                                await appointmentService.cancelAppointment(pending.supabase, pending.userId, pending.appointmentId, true);
+                                await sock.sendMessage(remoteJid, { text: '✅ Série de compromissos cancelada com sucesso.' });
+                            } catch (e) {
+                                await sock.sendMessage(remoteJid, { text: '❌ Erro ao cancelar série.' });
+                            }
+                            delete pendingConfirmations[remoteJid];
+                            continue;
+                        } else if (['não', 'nao', 'n', 'cancelar', 'parar'].includes(response)) {
+                            await sock.sendMessage(remoteJid, { text: '👍 Operação cancelada. Compromisso mantido.' });
+                            delete pendingConfirmations[remoteJid];
+                            continue;
+                        }
+                    }
+
+                    if (pending && pending.type === 'editar_appointment') {
+                        if (['sim', 's', 'ok', 'confirmar'].includes(response)) {
+                            try {
+                                const campos = Object.fromEntries(
+                                    Object.entries(pending.campos).filter(([, v]) => v !== null && v !== undefined)
+                                );
+                                await appointmentService.updateAppointment(pending.supabase, pending.userId, pending.appointmentId, campos);
+                                await sock.sendMessage(remoteJid, { text: '✅ Compromisso atualizado com sucesso.' });
+                            } catch (e) {
+                                await sock.sendMessage(remoteJid, { text: '❌ Erro ao atualizar compromisso.' });
+                            }
+                            delete pendingConfirmations[remoteJid];
+                            continue;
+                        } else if (['não', 'nao', 'n', 'cancelar'].includes(response)) {
+                            await sock.sendMessage(remoteJid, { text: '👍 Edição cancelada. Compromisso não alterado.' });
+                            delete pendingConfirmations[remoteJid];
+                            continue;
+                        }
+                    }
+
+                    // Confirmações financeiras existentes
+                    if (!pending.type) {
+                        if (['sim', 's', 'ok', 'confirmar', 'pode', 'bora'].includes(response)) {
+                            const data = pendingConfirmations[remoteJid];
+                            await saveTransactionsToDb(data);
+                            await sock.sendMessage(remoteJid, { text: `✅ *${data.length} transações salvas no banco de dados!*` });
+                            delete pendingConfirmations[remoteJid];
+                            continue;
+                        } else if (['não', 'nao', 'n', 'cancelar', 'parar'].includes(response)) {
+                            await sock.sendMessage(remoteJid, { text: '❌ *Operação cancelada.* Nada foi salvo.' });
+                            delete pendingConfirmations[remoteJid];
+                            continue;
+                        }
                     }
                 }
 
@@ -225,8 +287,216 @@ async function connectToWhatsApp() {
     }
 }
 
+/**
+ * Formata uma data ISO 8601 para exibição amigável em pt-BR.
+ */
+function formatDataHora(isoString) {
+    try {
+        const d = new Date(isoString);
+        const data = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        const hora = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        return `${data} às ${hora}`;
+    } catch {
+        return isoString;
+    }
+}
+
+/**
+ * Roteador de intenções de agenda. Executa a ação correspondente e responde ao usuário.
+ *
+ * @param {object} sock - Socket Baileys
+ * @param {string} jid - JID do destinatário
+ * @param {string} userId - UUID do usuário no Supabase
+ * @param {object} supabase - Cliente Supabase
+ * @param {string} intent - 'criar' | 'consultar' | 'editar' | 'cancelar'
+ * @param {object} dados - Dados extraídos pelo NLP
+ */
+async function handleAppointmentIntent(sock, jid, userId, supabase, intent, dados) {
+    try {
+        if (intent === 'criar') {
+            const created = await appointmentService.createAppointment(supabase, userId, {
+                titulo: dados.titulo,
+                data_hora: dados.data_hora,
+                descricao: dados.descricao || null,
+                lembrete_minutos: dados.lembrete_minutos || 15,
+                recorrencia: dados.recorrencia || 'unica',
+            });
+
+            const appt = created[0];
+            const recorrenciaLabel = appt.recorrencia !== 'unica'
+                ? ` (recorrência ${appt.recorrencia})`
+                : '';
+            const lembreteLabel = appt.lembrete_minutos
+                ? `\n⏰ *Lembrete:* ${appt.lembrete_minutos} minutos antes`
+                : '';
+            const descLabel = appt.descricao ? `\n📝 *Descrição:* ${appt.descricao}` : '';
+            const totalLabel = created.length > 1 ? `\n📅 *Total de ocorrências:* ${created.length}` : '';
+
+            const msg =
+                `✅ *Compromisso agendado!*\n\n` +
+                `📌 *Título:* ${appt.titulo}${recorrenciaLabel}\n` +
+                `🗓️ *Data/Hora:* ${formatDataHora(appt.data_hora)}` +
+                descLabel +
+                lembreteLabel +
+                totalLabel;
+
+            await sock.sendMessage(jid, { text: msg });
+            return;
+        }
+
+        if (intent === 'consultar') {
+            const periodo = dados.periodo || {};
+            const appointments = await appointmentService.getAppointments(supabase, userId, {
+                start: periodo.start,
+                end: periodo.end,
+            });
+
+            if (!appointments || appointments.length === 0) {
+                await sock.sendMessage(jid, { text: '📅 Nenhum compromisso encontrado para o período solicitado.' });
+                return;
+            }
+
+            // Paginar em blocos de 10
+            const PAGE_SIZE = 10;
+            for (let i = 0; i < appointments.length; i += PAGE_SIZE) {
+                const page = appointments.slice(i, i + PAGE_SIZE);
+                let msg = i === 0
+                    ? `📅 *Seus compromissos (${appointments.length} total):*\n`
+                    : `📅 *Continuação (${i + 1}–${Math.min(i + PAGE_SIZE, appointments.length)}):*\n`;
+
+                page.forEach((a, idx) => {
+                    const recLabel = a.recorrencia !== 'unica' ? ` 🔁${a.recorrencia}` : '';
+                    msg += `\n${i + idx + 1}. *${a.titulo}*${recLabel}\n   🗓️ ${formatDataHora(a.data_hora)}`;
+                    if (a.descricao) msg += `\n   📝 ${a.descricao}`;
+                });
+
+                await sock.sendMessage(jid, { text: msg });
+            }
+            return;
+        }
+
+        if (intent === 'cancelar') {
+            const alvo = dados.alvo || {};
+            // Busca compromissos que correspondam ao alvo
+            const all = await appointmentService.getAppointments(supabase, userId);
+            const candidates = all.filter(a => {
+                const tituloMatch = alvo.titulo
+                    ? a.titulo.toLowerCase().includes(alvo.titulo.toLowerCase())
+                    : true;
+                const dataMatch = alvo.data_hora
+                    ? a.data_hora.startsWith(alvo.data_hora.substring(0, 10))
+                    : true;
+                return tituloMatch && dataMatch;
+            });
+
+            if (candidates.length === 0) {
+                await sock.sendMessage(jid, { text: '⚠️ Nenhum compromisso encontrado para cancelar com os dados informados.' });
+                return;
+            }
+
+            const target = candidates[0];
+            const isRecorrente = target.recorrencia !== 'unica' && target.recorrencia_grupo_id;
+
+            let confirmMsg =
+                `❓ *Deseja cancelar este compromisso?*\n\n` +
+                `📌 *Título:* ${target.titulo}\n` +
+                `🗓️ *Data/Hora:* ${formatDataHora(target.data_hora)}`;
+
+            if (isRecorrente) {
+                confirmMsg += `\n\n🔁 Este compromisso é recorrente (${target.recorrencia}).\nResponda:\n• *"Sim"* — cancelar apenas este\n• *"Série"* — cancelar este e todos os futuros\n• *"Não"* — manter`;
+            } else {
+                confirmMsg += `\n\nResponda *"Sim"* para confirmar ou *"Não"* para manter.`;
+            }
+
+            // Armazena confirmação pendente de agenda
+            pendingConfirmations[jid] = {
+                type: 'cancelar_appointment',
+                appointmentId: target.id,
+                isRecorrente,
+                userId,
+                supabase,
+            };
+
+            await sock.sendMessage(jid, { text: confirmMsg });
+            return;
+        }
+
+        if (intent === 'editar') {
+            const alvo = dados.alvo || {};
+            const camposEditar = dados.campos_editar || {};
+
+            const all = await appointmentService.getAppointments(supabase, userId);
+            const candidates = all.filter(a => {
+                const tituloMatch = alvo.titulo
+                    ? a.titulo.toLowerCase().includes(alvo.titulo.toLowerCase())
+                    : true;
+                const dataMatch = alvo.data_hora
+                    ? a.data_hora.startsWith(alvo.data_hora.substring(0, 10))
+                    : true;
+                return tituloMatch && dataMatch;
+            });
+
+            if (candidates.length === 0) {
+                await sock.sendMessage(jid, { text: '⚠️ Nenhum compromisso encontrado para editar com os dados informados.' });
+                return;
+            }
+
+            const target = candidates[0];
+            const alteracoes = Object.entries(camposEditar)
+                .filter(([, v]) => v !== null && v !== undefined)
+                .map(([k, v]) => {
+                    if (k === 'data_hora') return `  • Data/Hora: ${formatDataHora(v)}`;
+                    if (k === 'titulo') return `  • Título: ${v}`;
+                    if (k === 'descricao') return `  • Descrição: ${v}`;
+                    if (k === 'lembrete_minutos') return `  • Lembrete: ${v} minutos antes`;
+                    if (k === 'recorrencia') return `  • Recorrência: ${v}`;
+                    return `  • ${k}: ${v}`;
+                })
+                .join('\n');
+
+            const confirmMsg =
+                `✏️ *Editar compromisso?*\n\n` +
+                `📌 *Atual:* ${target.titulo} — ${formatDataHora(target.data_hora)}\n\n` +
+                `*Alterações propostas:*\n${alteracoes || '  (nenhuma alteração detectada)'}\n\n` +
+                `Responda *"Sim"* para confirmar ou *"Não"* para cancelar.`;
+
+            pendingConfirmations[jid] = {
+                type: 'editar_appointment',
+                appointmentId: target.id,
+                campos: camposEditar,
+                userId,
+                supabase,
+            };
+
+            await sock.sendMessage(jid, { text: confirmMsg });
+            return;
+        }
+    } catch (err) {
+        console.error('❌ [Agenda] Erro em handleAppointmentIntent:', err.message);
+        await sock.sendMessage(jid, { text: '❌ Erro ao processar sua solicitação de agenda. Tente novamente.' });
+    }
+}
+
 async function handleTextMessage(sock, jid, text) {
     const now = new Date();
+
+    // --- ROTEAMENTO DE AGENDA (antes do fluxo financeiro) ---
+    const appointmentResult = await processAppointmentMessage(text, now.toISOString());
+    if (appointmentResult && appointmentResult.intent && appointmentResult.intent !== 'outro') {
+        if (!supabaseGlobal) {
+            console.warn('⚠️ [Agenda] supabaseGlobal não disponível. Continuando para fluxo financeiro.');
+        } else {
+            const userId = await appointmentService.resolveUserIdByPhone(supabaseGlobal, jid);
+            if (!userId) {
+                console.warn(`⚠️ [Agenda] Número ${jid} não mapeado a nenhum user_id. Continuando para fluxo financeiro.`);
+            } else {
+                const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                await handleAppointmentIntent(sock, jid, userId, supabaseClient, appointmentResult.intent, appointmentResult);
+                return;
+            }
+        }
+    }
+    // --- FIM DO ROTEAMENTO DE AGENDA ---
 
     // Tenta processar via Gemini primeiro (detecta intenção e mês pedido)
     const geminiResult = await processTextWithGemini(text);
