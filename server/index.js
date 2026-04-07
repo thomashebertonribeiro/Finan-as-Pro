@@ -45,9 +45,15 @@ app.use(cors({
 app.use(express.json());
 app.set('trust proxy', 1);
 
-// 4. Health Checks (para Railway manter o container vivo)
-app.get('/', (req, res) => res.json({ status: 'live', version: '4.0' }));
+// 4. Health Checks
 app.get('/health', (req, res) => res.json({ status: 'ok', uptime: Math.round(process.uptime()) }));
+
+// Servir frontend estático (build do React)
+const clientBuildPath = path.join(__dirname, '../client/dist');
+if (fs.existsSync(clientBuildPath)) {
+    app.use(express.static(clientBuildPath));
+    console.log('✅ [STATIC] Servindo frontend de:', clientBuildPath);
+}
 
 // 5. Servidor inicia PRIMEIRO
 app.listen(PORT, '0.0.0.0', () => {
@@ -457,5 +463,24 @@ app.delete('/appointments/:id', authMiddleware, async (req, res) => {
         res.status(200).json({ message: 'Compromisso cancelado com sucesso.' });
     } catch (err) {
         res.status(500).json({ error: 'Erro ao cancelar compromisso', details: err.message });
+    }
+});
+
+// Catch-all: serve o frontend para qualquer rota não reconhecida (React Router)
+app.get(['/financas', '/financas/*'], (req, res) => {
+    const indexPath = path.join(__dirname, '../client/dist/index.html');
+    if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+    } else {
+        res.json({ status: 'live', version: '4.0' });
+    }
+});
+
+app.get('*', (req, res) => {
+    const indexPath = path.join(__dirname, '../client/dist/index.html');
+    if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+    } else {
+        res.json({ status: 'live', version: '4.0' });
     }
 });
