@@ -12,7 +12,7 @@ const path = require('path');
 const os = require('os');
 // const Tesseract = require('tesseract.js'); // Movido para dentro das funções
 const { parseFinancialData } = require('./utils');
-const { saveTransactionsToDb, getSuppliers, getSetting, getMonthlySummary, supabaseGlobal, supabaseAdmin } = require('./database');
+const { saveTransactionsToDb, getSuppliers, getSetting, getMonthlySummary, supabaseAdmin } = require('./database');
 const { processImageWithGemini, processTextWithGemini, processAppointmentMessage } = require('./gemini-service');
 const appointmentService = require('./appointment-service');
 const { createClient } = require('@supabase/supabase-js');
@@ -137,7 +137,7 @@ async function connectToWhatsApp() {
                     }
                     console.log(`DEBUG: fromMe=${fromMe}, isSelfChat=${isSelfChat}, botNum=${botNum}, recipient=${remoteNum}, jid=${remoteJid}, botLid=${botLid}`);
                     
-                    const processOutgoing = waUserId ? await getSetting(supabaseGlobal, waUserId, 'process_outgoing_messages') : null;
+                    const processOutgoing = waUserId ? await getSetting(supabaseAdmin, waUserId, 'process_outgoing_messages') : null;
                     if (!isSelfChat && processOutgoing !== 'true') {
                          console.log(`⚠️ Mensagem para terceiros (${remoteJid}) ignorada por precaução (configuração desativada).`);
                          continue;
@@ -148,7 +148,7 @@ async function connectToWhatsApp() {
                 if (remoteJid.endsWith('@g.us') || remoteJid.includes('@broadcast') || remoteJid === 'status@broadcast') continue;
 
                 // 2. Verificar Número Autorizado
-                const authorizedSetting = waUserId ? await getSetting(supabaseGlobal, waUserId, 'whatsapp_authorized_number') : null;
+                const authorizedSetting = waUserId ? await getSetting(supabaseAdmin, waUserId, 'whatsapp_authorized_number') : null;
                 const senderNumber = remoteNum;
 
                 console.log(`--- Checagem de Segurança: Remetente=${senderNumber}, Autorizado=${authorizedSetting} ---`);
@@ -255,7 +255,7 @@ async function connectToWhatsApp() {
                         if (['sim', 's', 'ok', 'confirmar', 'pode', 'bora'].includes(response)) {
                             const data = pendingConfirmations[remoteJid];
                             if (waUserId) {
-                                await saveTransactionsToDb(supabaseGlobal, waUserId, data);
+                                await saveTransactionsToDb(supabaseAdmin, waUserId, data);
                             }
                             await sock.sendMessage(remoteJid, { text: `✅ *${data.length} transações salvas no banco de dados!*` });
                             delete pendingConfirmations[remoteJid];
@@ -504,7 +504,7 @@ async function handleTextMessage(sock, jid, text, userId) {
         const { acao, mesPedido, transacao, mensagemResposta } = geminiResult;
 
         if (acao === 'lancamento' && transacao) {
-            const suppliers = userId ? await getSuppliers(supabaseGlobal, userId) : [];
+            const suppliers = userId ? await getSuppliers(supabaseAdmin, userId) : [];
             let categoria = transacao.categoria || 'Outros';
             const matchedSupplier = suppliers.find(s =>
                 transacao.descricao?.toLowerCase().includes(s.nome.toLowerCase())
@@ -535,7 +535,7 @@ async function handleTextMessage(sock, jid, text, userId) {
             const targetYear  = mesPedido?.ano  || now.getFullYear();
             const targetMonth = mesPedido?.mes   || (now.getMonth() + 1);
             const summary = userId
-                ? await getMonthlySummary(supabaseGlobal, userId, targetYear, targetMonth)
+                ? await getMonthlySummary(supabaseAdmin, userId, targetYear, targetMonth)
                 : { totalEntradas: 0, totalSaidas: 0, totalInvestido: 0, topCategories: [], topCards: [], topInvestments: [], busyDay: null };
 
             const fmt = (v) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -595,7 +595,7 @@ async function handleTextMessage(sock, jid, text, userId) {
         if (acao === 'investi') categoria = 'Investimentos';
 
         const descricaoFinal = match[3]?.trim() || 'Lançamento via WhatsApp';
-        const suppliers = userId ? await getSuppliers(supabaseGlobal, userId) : [];
+        const suppliers = userId ? await getSuppliers(supabaseAdmin, userId) : [];
         const matchedSupplier = suppliers.find(s => descricaoFinal.toLowerCase().includes(s.nome.toLowerCase()));
         if (matchedSupplier && categoria === 'Outros') categoria = matchedSupplier.categoria;
 
@@ -631,7 +631,7 @@ async function handleImageMessage(sock, jid, imageMessage, userId) {
     fs.writeFileSync(tempPath, buffer);
 
     try {
-        const suppliers = userId ? await getSuppliers(supabaseGlobal, userId) : [];
+        const suppliers = userId ? await getSuppliers(supabaseAdmin, userId) : [];
         let transactions = null;
 
         // --- Passo 1: Tenta Gemini IA ---
