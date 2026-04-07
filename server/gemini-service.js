@@ -1,6 +1,18 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const fs = require("fs");
-const { getSetting, getBankProfiles } = require("./database");
+const { getSetting, getBankProfiles, supabaseGlobal } = require("./database");
+
+// Helper para buscar setting com fallback para env var
+async function getSettingWithFallback(key, envFallback) {
+    try {
+        if (supabaseGlobal) {
+            // Busca sem user_id (configuração global)
+            const { data } = await supabaseGlobal.from('settings').select('value').eq('key', key).limit(1).single();
+            if (data?.value) return data.value;
+        }
+    } catch (e) { /* ignora */ }
+    return envFallback || null;
+}
 
 /**
  * Processa uma imagem usando Google Gemini Vision para extrair transações financeiras.
@@ -10,7 +22,7 @@ const { getSetting, getBankProfiles } = require("./database");
  */
 async function processImageWithGemini(imagePath, mimeType) {
     try {
-        const apiKey = await getSetting('gemini_api_key');
+        const apiKey = await getSettingWithFallback('gemini_api_key', process.env.GEMINI_API_KEY);
         if (!apiKey || !apiKey.trim()) {
             console.log("⚠️ Gemini API Key não configurada. Usando OCR local (Tesseract).");
             return null;
@@ -373,3 +385,5 @@ MENSAGEM DO USUÁRIO: "${text}"
         return null;
     }
 }
+
+module.exports = { processImageWithGemini, processTextWithGemini, processAppointmentMessage };
