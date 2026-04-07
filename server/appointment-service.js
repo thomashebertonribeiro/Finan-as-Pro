@@ -237,13 +237,14 @@ async function resolveUserIdByPhone(supabaseGlobal, phoneNumber) {
   const { data, error } = await supabaseGlobal
     .from('settings')
     .select('user_id, value')
-    .eq('key', 'whatsapp_authorized_number');
+    .in('key', ['whatsapp_authorized_number', 'whatsapp_lid']);
 
   if (error || !data || data.length === 0) return null;
 
   for (const row of data) {
     const savedDigits = (row.value || '').replace(/\D/g, '');
-    if (savedDigits.slice(-8) === last8) {
+    // Compara últimos 8 dígitos (número de telefone) ou valor exato (LID)
+    if (savedDigits.slice(-8) === last8 || row.value === digits) {
       return row.user_id;
     }
   }
