@@ -490,8 +490,7 @@ async function handleTextMessage(sock, jid, text, userId) {
             if (!userId) {
                 console.warn(`⚠️ [Agenda] Número ${jid} não mapeado a nenhum user_id. Continuando para fluxo financeiro.`);
             } else {
-                const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                await handleAppointmentIntent(sock, jid, userId, supabaseClient, appointmentResult.intent, appointmentResult);
+                await handleAppointmentIntent(sock, jid, userId, supabaseAdmin, appointmentResult.intent, appointmentResult);
                 return;
             }
         }
