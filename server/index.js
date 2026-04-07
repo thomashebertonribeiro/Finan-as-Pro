@@ -17,6 +17,14 @@ process.on('SIGTERM', () => {
 
 // 2. Dependências Externas
 require('dotenv').config();
+
+// Validação de variáveis de ambiente obrigatórias
+const REQUIRED_ENV_VARS = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_JWT_SECRET', 'GEMINI_API_KEY'];
+REQUIRED_ENV_VARS.forEach(varName => {
+    if (!process.env[varName]) {
+        console.error(`❌ [CONFIG] Variável de ambiente obrigatória ausente: ${varName}`);
+    }
+});
 const express = require('express');
 const authMiddleware = require('./authMiddleware');
 const cors = require('cors');
@@ -29,7 +37,11 @@ const app = express();
 const PORT = process.env.PORT || 3002;
 
 // 3. Middlewares
-app.use(cors({ origin: '*', methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], allowedHeaders: ['Content-Type', 'Authorization'] }));
+app.use(cors({
+    origin: process.env.CORS_ORIGIN || 'https://financas.brasilices.tech',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 app.set('trust proxy', 1);
 
