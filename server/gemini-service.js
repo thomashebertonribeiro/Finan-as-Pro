@@ -48,12 +48,12 @@ async function processImageWithGemini(imagePath, mimeType) {
         const currentYear = today.getFullYear();
         
         // Busca perfis de banco para passar ao Gemini como contexto de identificação
-        const bankProfiles = await getBankProfiles();
+        const bankProfiles = await getBankProfiles(supabaseGlobal, null).catch(() => []);
         const profilesContext = bankProfiles.map(p => 
             `- Banco: ${p.nome} (ID: ${p.identificador})${p.cartao_final ? `, Cartão Final: ${p.cartao_final}` : ''}. IGNORE estas palavras/labels se aparecerem como descrição: [${p.palavras_ignorar}]`
         ).join('\n');
 
-        const systemPrompt = await getSetting('gemini_system_prompt') || '';
+        const systemPrompt = await getSettingWithFallback('gemini_system_prompt', '') || '';
         
         const prompt = `
             ${systemPrompt}
@@ -206,7 +206,7 @@ async function processImageWithGemini(imagePath, mimeType) {
  */
 async function processAppointmentMessage(text, contextDate) {
     try {
-        const apiKey = await getSetting('gemini_api_key');
+        const apiKey = await getSettingWithFallback('gemini_api_key', process.env.GEMINI_API_KEY);
         if (!apiKey || !apiKey.trim()) return null;
 
         const genAI = new GoogleGenerativeAI(apiKey);
@@ -320,10 +320,10 @@ MENSAGEM DO USUÁRIO: "${text}"
  */
 async function processTextWithGemini(text) {
     try {
-        const apiKey = await getSetting('gemini_api_key');
+        const apiKey = await getSettingWithFallback('gemini_api_key', process.env.GEMINI_API_KEY);
         if (!apiKey || !apiKey.trim()) return null;
 
-        const systemPrompt = await getSetting('gemini_system_prompt') || '';
+        const systemPrompt = await getSettingWithFallback('gemini_system_prompt', '') || '';
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
             model: "gemini-1.5-flash",
