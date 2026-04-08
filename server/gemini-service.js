@@ -32,7 +32,7 @@ async function processImageWithGemini(imagePath, mimeType) {
         const genAI = new GoogleGenerativeAI(apiKey);
         // A conta do usuário possui acesso exclusivo à série Gemini 2.5
         const model = genAI.getGenerativeModel({ 
-            model: "gemini-1.5-flash",
+            model: "gemini-2.0-flash",
             generationConfig: { responseMimeType: "application/json" }
         });
 
@@ -211,7 +211,7 @@ async function processAppointmentMessage(text, contextDate) {
 
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
-            model: "gemini-1.5-flash",
+            model: "gemini-2.0-flash",
             generationConfig: { responseMimeType: "application/json" }
         });
 
@@ -326,7 +326,7 @@ async function processTextWithGemini(text) {
         const systemPrompt = await getSettingWithFallback('gemini_system_prompt', '') || '';
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
-            model: "gemini-1.5-flash",
+            model: "gemini-2.0-flash",
             generationConfig: { responseMimeType: "application/json" }
         });
 
